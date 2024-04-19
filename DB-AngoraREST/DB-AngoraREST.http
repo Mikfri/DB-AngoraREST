@@ -1,0 +1,6 @@
+@DB_AngoraREST_HostAddress = http://localhost:5124
+
+GET {{DB_AngoraREST_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
