@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,9 +22,13 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<RabbitValidator>();
 
 //---------------------: IDENTITY SETUP
-builder.Services.AddIdentity<User, IdentityRole>()
-    .AddEntityFrameworkStores<DB_AngoraContext>()
-    .AddDefaultTokenProviders();
+//builder.Services.AddIdentity<User, IdentityRole>()
+//    .AddEntityFrameworkStores<DB_AngoraContext>()
+//    .AddDefaultTokenProviders();
+
+builder.Services.AddIdentityApiEndpoints<User>()
+    .AddEntityFrameworkStores<DB_AngoraContext>();
+
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -50,7 +56,17 @@ builder.Services.Configure<IdentityOptions>(options =>
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+//builder.Services.AddSwaggerGen(); // Dette er den originale linje
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+    });
+    options.OperationFilter<SecurityRequirementsOperationFilter>();
+});
 
 // -----------------: DB SETUP
 //builder.Services.AddDbContext<DB_AngoraContext>(options =>
@@ -61,24 +77,22 @@ builder.Services.AddDbContext<DB_AngoraContext>(options =>
 
 builder.Services.AddAuthorization(); // Denne er nødvendig for at kunne bruge [Authorize] attributten i controllers
 
-builder.Services.AddIdentityApiEndpoints<User>()
-    .AddEntityFrameworkStores<DB_AngoraContext>();
 
 //------- JWT SETUP
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Issuer"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        };
-    });
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//    .AddJwtBearer(options =>
+//    {
+//        options.TokenValidationParameters = new TokenValidationParameters
+//        {
+//            ValidateIssuer = true,
+//            ValidateAudience = true,
+//            ValidateLifetime = true,
+//            ValidateIssuerSigningKey = true,
+//            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+//            ValidAudience = builder.Configuration["Jwt:Issuer"],
+//            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+//        };
+//    });
 //----------------//END: IDENTITY SETUP
 
 var app = builder.Build();

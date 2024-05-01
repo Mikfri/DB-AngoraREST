@@ -3,59 +3,46 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace DB_AngoraREST.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class MockDataSetup : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "RoleClaims",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RoleClaims", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Roles",
+                name: "AspNetRoles",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    NormalizedName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Roles", x => x.Id);
+                    table.PrimaryKey("PK_AspNetRoles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "User",
+                name: "AspNetUsers",
                 columns: table => new
                 {
-                    BreederRegNo = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    BreederRegNo = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RoadNameAndNo = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ZipCode = table.Column<int>(type: "int", nullable: false),
                     City = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsAdmin = table.Column<bool>(type: "bit", nullable: true),
-                    Id = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -69,40 +56,73 @@ namespace DB_AngoraREST.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_User", x => x.BreederRegNo);
+                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserClaims",
+                name: "AspNetRoleClaims",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserClaims", x => x.Id);
+                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserLogins",
+                name: "AspNetUserClaims",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetUserClaims_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUserLogins",
                 columns: table => new
                 {
                     LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserLogins", x => new { x.LoginProvider, x.ProviderKey });
+                    table.PrimaryKey("PK_AspNetUserLogins", x => new { x.LoginProvider, x.ProviderKey });
+                    table.ForeignKey(
+                        name: "FK_AspNetUserLogins_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserRoles",
+                name: "AspNetUserRoles",
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
@@ -110,11 +130,23 @@ namespace DB_AngoraREST.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserRoles", x => new { x.UserId, x.RoleId });
+                    table.PrimaryKey("PK_AspNetUserRoles", x => new { x.UserId, x.RoleId });
+                    table.ForeignKey(
+                        name: "FK_AspNetUserRoles_AspNetRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AspNetUserRoles_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserTokens",
+                name: "AspNetUserTokens",
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
@@ -124,7 +156,13 @@ namespace DB_AngoraREST.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
+                    table.PrimaryKey("PK_AspNetUserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
+                    table.ForeignKey(
+                        name: "FK_AspNetUserTokens_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -147,10 +185,10 @@ namespace DB_AngoraREST.Migrations
                 {
                     table.PrimaryKey("PK_Rabbits", x => new { x.RightEarId, x.LeftEarId });
                     table.ForeignKey(
-                        name: "FK_Rabbits_User_OwnerId",
+                        name: "FK_Rabbits_AspNetUsers_OwnerId",
                         column: x => x.OwnerId,
-                        principalTable: "User",
-                        principalColumn: "BreederRegNo");
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -241,6 +279,80 @@ namespace DB_AngoraREST.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "AspNetUsers",
+                columns: new[] { "Id", "AccessFailedCount", "BreederRegNo", "City", "ConcurrencyStamp", "Email", "EmailConfirmed", "FirstName", "IsAdmin", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "RoadNameAndNo", "SecurityStamp", "TwoFactorEnabled", "UserName", "ZipCode" },
+                values: new object[,]
+                {
+                    { "5053", 0, "5053", "Benløse", "0394d8a1-f18f-4ce6-9c8d-25d8b2358dc6", "MajaJoensen89@gmail.com", false, "Maja", false, "Hulstrøm", false, null, null, null, "AQAAAAIAAYagAAAAEObNW35KHfNyoAokN5kU7o7s8DisHR6xJX2KTAkrZZ29agQTpewHlhsTsQBvWQQnWQ==", "28733085", false, "Sletten 4", "e8e02e9a-ebac-4e93-b20b-eafa3895fad7", false, null, 4100 },
+                    { "5095", 0, "5095", "Kirke Såby", "dba57365-e4c8-458c-b7bd-0ed771dceafe", "IdaFribor87@gmail.com", false, "Ida", true, "Friborg", false, null, null, null, "AQAAAAIAAYagAAAAELLpYDZ8UVtPtS9AwOJ6/qaJqt4SfMphi1nToA/oi/f9LjRJMJsJY+DIt7aQy/+DMg==", "27586455", false, "Fynsvej 14", "b494e9b7-3daf-4509-b2c8-4bb0f078e28d", false, null, 4060 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Rabbits",
+                columns: new[] { "LeftEarId", "RightEarId", "ApprovedRaceColorCombination", "Color", "DateOfBirth", "DateOfDeath", "Gender", "IsPublic", "NickName", "OwnerId", "Race" },
+                values: new object[,]
+                {
+                    { "3020", "4398", null, 26, new DateOnly(2022, 7, 22), null, 1, 0, "Douglas", "5053", 10 },
+                    { "105", "4640", null, 13, new DateOnly(2021, 4, 5), null, 1, 0, "Ingolf", "5095", 0 },
+                    { "120", "4640", null, 16, new DateOnly(2021, 5, 11), new DateOnly(2023, 11, 3), 0, 0, "Mulan", "5095", 0 },
+                    { "206", "4977", null, 15, new DateOnly(2022, 2, 2), null, 1, 0, "Dario", "5053", 17 },
+                    { "213", "4977", null, 6, new DateOnly(2022, 3, 24), null, 0, 0, "Frida", "5053", 17 },
+                    { "315", "4977", null, 15, new DateOnly(2023, 1, 13), null, 0, 0, "Miranda", "5053", 17 },
+                    { "0223", "5053", null, 16, new DateOnly(2023, 5, 30), null, 0, 0, "Chinchou", "5053", 17 },
+                    { "0423", "5053", null, 15, new DateOnly(2023, 5, 30), null, 0, 0, "Gastly", "5053", 17 },
+                    { "0623", "5053", null, 19, new DateOnly(2023, 8, 17), null, 0, 0, "Karla", "5053", 17 },
+                    { "0723", "5053", null, 21, new DateOnly(2024, 10, 15), null, 1, 0, "Sandshrew", "5053", 17 },
+                    { "0823", "5053", null, 25, new DateOnly(2024, 10, 15), null, 0, 0, "Pepsi", "5053", 17 },
+                    { "0923", "5053", null, 25, new DateOnly(2024, 10, 15), new DateOnly(2024, 3, 14), 1, 0, "Cola", "5053", 17 },
+                    { "1023", "5053", null, 21, new DateOnly(2024, 10, 15), null, 0, 0, "Marabou", "5053", 17 },
+                    { "001", "5095", null, 18, new DateOnly(2019, 2, 27), new DateOnly(2024, 4, 13), 0, 0, "Kaliba", "5095", 0 },
+                    { "002", "5095", null, 16, new DateOnly(2020, 6, 12), new DateOnly(2022, 7, 22), 0, 0, "Sov", "5095", 0 },
+                    { "003", "5095", null, 26, new DateOnly(2020, 3, 12), new DateOnly(2023, 11, 3), 0, 0, "Smørklat Smør", "5095", 0 },
+                    { "2104", "M63", null, 30, new DateOnly(2023, 5, 22), null, 0, 0, "Ortovi", "5053", 17 },
+                    { "3102", "M63", null, 19, new DateOnly(2023, 9, 23), null, 0, 0, "Xådda", "5053", 17 },
+                    { "023", "V23", null, 4, new DateOnly(2020, 4, 10), new DateOnly(2024, 4, 23), 1, 0, "Aslan", "5053", 17 }
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetRoleClaims_RoleId",
+                table: "AspNetRoleClaims",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "RoleNameIndex",
+                table: "AspNetRoles",
+                column: "NormalizedName",
+                unique: true,
+                filter: "[NormalizedName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserClaims_UserId",
+                table: "AspNetUserClaims",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserLogins_UserId",
+                table: "AspNetUserLogins",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserRoles_RoleId",
+                table: "AspNetUserRoles",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "EmailIndex",
+                table: "AspNetUsers",
+                column: "NormalizedEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "UserNameIndex",
+                table: "AspNetUsers",
+                column: "NormalizedUserName",
+                unique: true,
+                filter: "[NormalizedUserName] IS NOT NULL");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Photos_RabbitRightEarId_RabbitLeftEarId",
                 table: "Photos",
@@ -276,6 +388,21 @@ namespace DB_AngoraREST.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AspNetRoleClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserLogins");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserRoles");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
                 name: "Photos");
 
             migrationBuilder.DropTable(
@@ -285,28 +412,13 @@ namespace DB_AngoraREST.Migrations
                 name: "Ratings");
 
             migrationBuilder.DropTable(
-                name: "RoleClaims");
-
-            migrationBuilder.DropTable(
-                name: "Roles");
-
-            migrationBuilder.DropTable(
-                name: "UserClaims");
-
-            migrationBuilder.DropTable(
-                name: "UserLogins");
-
-            migrationBuilder.DropTable(
-                name: "UserRoles");
-
-            migrationBuilder.DropTable(
-                name: "UserTokens");
+                name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "Rabbits");
 
             migrationBuilder.DropTable(
-                name: "User");
+                name: "AspNetUsers");
         }
     }
 }
