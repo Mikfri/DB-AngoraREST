@@ -1,4 +1,5 @@
 ﻿using DB_AngoraLib.DTOs;
+using DB_AngoraLib.Models;
 using DB_AngoraLib.Services.UserService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +17,15 @@ namespace DB_AngoraREST.Controllers
         public UserController(IUserService userService)
         {
             _userService = userService;
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<User>>> GetAllUsers()
+        {
+            var users = await _userService.GetAllUsersAsync();
+            return Ok(users);
         }
 
         [ProducesResponseType(StatusCodes.Status200OK)]

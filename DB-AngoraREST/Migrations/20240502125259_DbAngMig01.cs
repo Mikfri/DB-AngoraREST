@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DB_AngoraREST.Migrations
 {
     /// <inheritdoc />
-    public partial class MockDataSetup : Migration
+    public partial class DbAngMig01 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,7 +32,6 @@ namespace DB_AngoraREST.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    BreederRegNo = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RoadNameAndNo = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -281,11 +280,11 @@ namespace DB_AngoraREST.Migrations
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "BreederRegNo", "City", "ConcurrencyStamp", "Email", "EmailConfirmed", "FirstName", "IsAdmin", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "RoadNameAndNo", "SecurityStamp", "TwoFactorEnabled", "UserName", "ZipCode" },
+                columns: new[] { "Id", "AccessFailedCount", "City", "ConcurrencyStamp", "Email", "EmailConfirmed", "FirstName", "IsAdmin", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "RoadNameAndNo", "SecurityStamp", "TwoFactorEnabled", "UserName", "ZipCode" },
                 values: new object[,]
                 {
-                    { "5053", 0, "5053", "Benløse", "0394d8a1-f18f-4ce6-9c8d-25d8b2358dc6", "MajaJoensen89@gmail.com", false, "Maja", false, "Hulstrøm", false, null, null, null, "AQAAAAIAAYagAAAAEObNW35KHfNyoAokN5kU7o7s8DisHR6xJX2KTAkrZZ29agQTpewHlhsTsQBvWQQnWQ==", "28733085", false, "Sletten 4", "e8e02e9a-ebac-4e93-b20b-eafa3895fad7", false, null, 4100 },
-                    { "5095", 0, "5095", "Kirke Såby", "dba57365-e4c8-458c-b7bd-0ed771dceafe", "IdaFribor87@gmail.com", false, "Ida", true, "Friborg", false, null, null, null, "AQAAAAIAAYagAAAAELLpYDZ8UVtPtS9AwOJ6/qaJqt4SfMphi1nToA/oi/f9LjRJMJsJY+DIt7aQy/+DMg==", "27586455", false, "Fynsvej 14", "b494e9b7-3daf-4509-b2c8-4bb0f078e28d", false, null, 4060 }
+                    { "5053", 0, "Benløse", "562200cc-3561-4065-9a0b-1d67eedfed05", "MajaJoensen89@gmail.com", false, "Maja", false, "Hulstrøm", false, null, null, null, "AQAAAAIAAYagAAAAEGQuyYe6f7chvubR9A75SurPrJhRKgihyjzDLX1+WqBE5VM/+2LtnUF+Aa/cRTmc8w==", "28733085", false, "Sletten 4", "039c721e-82da-4687-be75-549217d258db", false, null, 4100 },
+                    { "5095", 0, "Kirke Såby", "412e0ac1-c6a8-4a3d-8966-6afe7aa9ec28", "IdaFribor87@gmail.com", false, "Ida", true, "Friborg", false, null, null, null, "AQAAAAIAAYagAAAAEM+w4FIfD/YOwnbGlTs2d92NrQRTdWhp7+hVU5P3NQeA+S3DS4QovgwrgjqHxjsprg==", "27586455", false, "Fynsvej 14", "b0648f8f-cfc7-46a4-a3c8-9361312229f9", false, null, 4060 }
                 });
 
             migrationBuilder.InsertData(

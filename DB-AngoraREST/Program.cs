@@ -21,35 +21,37 @@ builder.Services.AddScoped<IGRepository<User>, GRepository<User>>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<RabbitValidator>();
 
+
+//-------: STANDARD IDENTITY-USER SETUP
+//builder.Services.AddIdentityApiEndpoints<User>()
+
+//    .AddEntityFrameworkStores<DB_AngoraContext>();
 //---------------------: IDENTITY SETUP
-//builder.Services.AddIdentity<User, IdentityRole>()
-//    .AddEntityFrameworkStores<DB_AngoraContext>()
-//    .AddDefaultTokenProviders();
-
-builder.Services.AddIdentityApiEndpoints<User>()
-    .AddEntityFrameworkStores<DB_AngoraContext>();
+builder.Services.AddIdentity<User, IdentityRole>()
+    .AddEntityFrameworkStores<DB_AngoraContext>()
+    .AddDefaultTokenProviders();
 
 
-builder.Services.Configure<IdentityOptions>(options =>
-{
-    // Password settings.
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireNonAlphanumeric = true;
-    options.Password.RequireUppercase = true;
-    options.Password.RequiredLength = 6;
-    options.Password.RequiredUniqueChars = 1;
+//builder.Services.Configure<IdentityOptions>(options =>
+//{
+//    // Password settings.
+//    options.Password.RequireDigit = true;
+//    options.Password.RequireLowercase = true;
+//    options.Password.RequireNonAlphanumeric = true;
+//    options.Password.RequireUppercase = true;
+//    options.Password.RequiredLength = 6;
+//    options.Password.RequiredUniqueChars = 1;
 
-    // Lockout settings.
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-    options.Lockout.MaxFailedAccessAttempts = 5;
-    options.Lockout.AllowedForNewUsers = true;
+//    // Lockout settings.
+//    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+//    options.Lockout.MaxFailedAccessAttempts = 5;
+//    options.Lockout.AllowedForNewUsers = true;
 
-    // User settings.
-    options.User.AllowedUserNameCharacters =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-    options.User.RequireUniqueEmail = false;
-});
+//    // User settings.
+//    options.User.AllowedUserNameCharacters =
+//    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+//    options.User.RequireUniqueEmail = false;
+//});
 
 
 
@@ -59,18 +61,18 @@ builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerGen(); // Dette er den originale linje
 builder.Services.AddSwaggerGen(options =>
 {
-    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    options.AddSecurityDefinition("JWT-bearer", new OpenApiSecurityScheme
     {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
         In = ParameterLocation.Header,
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
     });
     options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
 
 // -----------------: DB SETUP
-//builder.Services.AddDbContext<DB_AngoraContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDbContext<DB_AngoraContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
     b => b.MigrationsAssembly("DB-AngoraREST")));
@@ -105,7 +107,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapIdentityApi<User>(); // Dette middleware gør at man kan bruge IdentityUser i controllers
+
+//app.MapIdentityApi<User>(); // Dette middleware gør at man kan bruge IdentityUser i controllers. 
 
 app.UseHttpsRedirection();
 

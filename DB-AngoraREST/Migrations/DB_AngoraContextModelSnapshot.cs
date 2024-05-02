@@ -447,9 +447,6 @@ namespace DB_AngoraREST.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<string>("BreederRegNo")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("City")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -533,20 +530,19 @@ namespace DB_AngoraREST.Migrations
                         {
                             Id = "5095",
                             AccessFailedCount = 0,
-                            BreederRegNo = "5095",
                             City = "Kirke Såby",
-                            ConcurrencyStamp = "dba57365-e4c8-458c-b7bd-0ed771dceafe",
+                            ConcurrencyStamp = "412e0ac1-c6a8-4a3d-8966-6afe7aa9ec28",
                             Email = "IdaFribor87@gmail.com",
                             EmailConfirmed = false,
                             FirstName = "Ida",
                             IsAdmin = true,
                             LastName = "Friborg",
                             LockoutEnabled = false,
-                            PasswordHash = "AQAAAAIAAYagAAAAELLpYDZ8UVtPtS9AwOJ6/qaJqt4SfMphi1nToA/oi/f9LjRJMJsJY+DIt7aQy/+DMg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEM+w4FIfD/YOwnbGlTs2d92NrQRTdWhp7+hVU5P3NQeA+S3DS4QovgwrgjqHxjsprg==",
                             PhoneNumber = "27586455",
                             PhoneNumberConfirmed = false,
                             RoadNameAndNo = "Fynsvej 14",
-                            SecurityStamp = "b494e9b7-3daf-4509-b2c8-4bb0f078e28d",
+                            SecurityStamp = "b0648f8f-cfc7-46a4-a3c8-9361312229f9",
                             TwoFactorEnabled = false,
                             ZipCode = 4060
                         },
@@ -554,20 +550,19 @@ namespace DB_AngoraREST.Migrations
                         {
                             Id = "5053",
                             AccessFailedCount = 0,
-                            BreederRegNo = "5053",
                             City = "Benløse",
-                            ConcurrencyStamp = "0394d8a1-f18f-4ce6-9c8d-25d8b2358dc6",
+                            ConcurrencyStamp = "562200cc-3561-4065-9a0b-1d67eedfed05",
                             Email = "MajaJoensen89@gmail.com",
                             EmailConfirmed = false,
                             FirstName = "Maja",
                             IsAdmin = false,
                             LastName = "Hulstrøm",
                             LockoutEnabled = false,
-                            PasswordHash = "AQAAAAIAAYagAAAAEObNW35KHfNyoAokN5kU7o7s8DisHR6xJX2KTAkrZZ29agQTpewHlhsTsQBvWQQnWQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEGQuyYe6f7chvubR9A75SurPrJhRKgihyjzDLX1+WqBE5VM/+2LtnUF+Aa/cRTmc8w==",
                             PhoneNumber = "28733085",
                             PhoneNumberConfirmed = false,
                             RoadNameAndNo = "Sletten 4",
-                            SecurityStamp = "e8e02e9a-ebac-4e93-b20b-eafa3895fad7",
+                            SecurityStamp = "039c721e-82da-4687-be75-549217d258db",
                             TwoFactorEnabled = false,
                             ZipCode = 4100
                         });
