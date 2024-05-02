@@ -283,8 +283,8 @@ namespace DB_AngoraREST.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "City", "ConcurrencyStamp", "Email", "EmailConfirmed", "FirstName", "IsAdmin", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "RoadNameAndNo", "SecurityStamp", "TwoFactorEnabled", "UserName", "ZipCode" },
                 values: new object[,]
                 {
-                    { "5053", 0, "Benløse", "562200cc-3561-4065-9a0b-1d67eedfed05", "MajaJoensen89@gmail.com", false, "Maja", false, "Hulstrøm", false, null, null, null, "AQAAAAIAAYagAAAAEGQuyYe6f7chvubR9A75SurPrJhRKgihyjzDLX1+WqBE5VM/+2LtnUF+Aa/cRTmc8w==", "28733085", false, "Sletten 4", "039c721e-82da-4687-be75-549217d258db", false, null, 4100 },
-                    { "5095", 0, "Kirke Såby", "412e0ac1-c6a8-4a3d-8966-6afe7aa9ec28", "IdaFribor87@gmail.com", false, "Ida", true, "Friborg", false, null, null, null, "AQAAAAIAAYagAAAAEM+w4FIfD/YOwnbGlTs2d92NrQRTdWhp7+hVU5P3NQeA+S3DS4QovgwrgjqHxjsprg==", "27586455", false, "Fynsvej 14", "b0648f8f-cfc7-46a4-a3c8-9361312229f9", false, null, 4060 }
+                    { "5053", 0, "Benløse", "92f8a18a-d4ef-4921-8726-90d9212daca4", "MajaJoensen89@gmail.com", false, "Maja", false, "Hulstrøm", false, null, "MAJAJOENSEN89@GMAIL.COM", "MAJAJOENSEN89@GMAIL.COM", "AQAAAAIAAYagAAAAEHK61eOGf58GqXplrh3vk+pe+CMCsrGYRkQxoFki4smrGzPXOsZffEKtvtxKluJzVA==", "28733085", false, "Sletten 4", "30b9bfd7-ae0b-481d-9578-9b2cc58dc280", false, "MajaJoensen89@gmail.com", 4100 },
+                    { "5095", 0, "Kirke Såby", "8f5a1ade-4091-42df-93b5-e11de2cadbbc", "IdaFriborg87@gmail.com", false, "Ida", true, "Friborg", false, null, "IDAFRIBORG87@GMAIL.COM", "IDAFRIBORG87@GMAIL.COM", "AQAAAAIAAYagAAAAEIUg9b879kFA8KljByofv0LHCi/7MIJ5nCL0mUTmqSQ+gpRG1VJ318gNapCt0iEQYQ==", "27586455", false, "Fynsvej 14", "7e832a3e-57d9-4217-a66e-a462b85ebfcf", false, "IdaFriborg87@gmail.com", 4060 }
                 });
 
             migrationBuilder.InsertData(

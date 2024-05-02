@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DB_AngoraREST.Migrations
 {
     [DbContext(typeof(DB_AngoraContext))]
-    [Migration("20240502125259_DbAngMig01")]
+    [Migration("20240502142030_DbAngMig01")]
     partial class DbAngMig01
     {
         /// <inheritdoc />
@@ -534,19 +534,22 @@ namespace DB_AngoraREST.Migrations
                             Id = "5095",
                             AccessFailedCount = 0,
                             City = "Kirke Såby",
-                            ConcurrencyStamp = "412e0ac1-c6a8-4a3d-8966-6afe7aa9ec28",
-                            Email = "IdaFribor87@gmail.com",
+                            ConcurrencyStamp = "8f5a1ade-4091-42df-93b5-e11de2cadbbc",
+                            Email = "IdaFriborg87@gmail.com",
                             EmailConfirmed = false,
                             FirstName = "Ida",
                             IsAdmin = true,
                             LastName = "Friborg",
                             LockoutEnabled = false,
-                            PasswordHash = "AQAAAAIAAYagAAAAEM+w4FIfD/YOwnbGlTs2d92NrQRTdWhp7+hVU5P3NQeA+S3DS4QovgwrgjqHxjsprg==",
+                            NormalizedEmail = "IDAFRIBORG87@GMAIL.COM",
+                            NormalizedUserName = "IDAFRIBORG87@GMAIL.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEIUg9b879kFA8KljByofv0LHCi/7MIJ5nCL0mUTmqSQ+gpRG1VJ318gNapCt0iEQYQ==",
                             PhoneNumber = "27586455",
                             PhoneNumberConfirmed = false,
                             RoadNameAndNo = "Fynsvej 14",
-                            SecurityStamp = "b0648f8f-cfc7-46a4-a3c8-9361312229f9",
+                            SecurityStamp = "7e832a3e-57d9-4217-a66e-a462b85ebfcf",
                             TwoFactorEnabled = false,
+                            UserName = "IdaFriborg87@gmail.com",
                             ZipCode = 4060
                         },
                         new
@@ -554,19 +557,22 @@ namespace DB_AngoraREST.Migrations
                             Id = "5053",
                             AccessFailedCount = 0,
                             City = "Benløse",
-                            ConcurrencyStamp = "562200cc-3561-4065-9a0b-1d67eedfed05",
+                            ConcurrencyStamp = "92f8a18a-d4ef-4921-8726-90d9212daca4",
                             Email = "MajaJoensen89@gmail.com",
                             EmailConfirmed = false,
                             FirstName = "Maja",
                             IsAdmin = false,
                             LastName = "Hulstrøm",
                             LockoutEnabled = false,
-                            PasswordHash = "AQAAAAIAAYagAAAAEGQuyYe6f7chvubR9A75SurPrJhRKgihyjzDLX1+WqBE5VM/+2LtnUF+Aa/cRTmc8w==",
+                            NormalizedEmail = "MAJAJOENSEN89@GMAIL.COM",
+                            NormalizedUserName = "MAJAJOENSEN89@GMAIL.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEHK61eOGf58GqXplrh3vk+pe+CMCsrGYRkQxoFki4smrGzPXOsZffEKtvtxKluJzVA==",
                             PhoneNumber = "28733085",
                             PhoneNumberConfirmed = false,
                             RoadNameAndNo = "Sletten 4",
-                            SecurityStamp = "039c721e-82da-4687-be75-549217d258db",
+                            SecurityStamp = "30b9bfd7-ae0b-481d-9578-9b2cc58dc280",
                             TwoFactorEnabled = false,
+                            UserName = "MajaJoensen89@gmail.com",
                             ZipCode = 4100
                         });
                 });
