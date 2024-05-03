@@ -60,7 +60,8 @@ namespace DB_AngoraREST.Controllers
             {
                 var user = new User
                 {
-                    UserName = regDTO.BreederRegNo,
+                    Id = regDTO.BreederRegNo,
+                    UserName = regDTO.Email,
                     Email = regDTO.Email,
                     PhoneNumber = regDTO.PhoneNum,
                     FirstName = regDTO.FirstName,

@@ -4,6 +4,7 @@ using DB_AngoraLib.Repository;
 using DB_AngoraLib.Services.RabbitService;
 using DB_AngoraLib.Services.UserService;
 using DB_AngoraLib.Services.ValidationService;
+using DB_AngoraREST.DB_DataStarter;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -72,7 +73,7 @@ builder.Services.AddSwaggerGen(options =>
     options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
 
-// -----------------: DB SETUP
+// -----------------: DB CONNECTION-STRING & MIGRATION SETUP
 builder.Services.AddDbContext<DB_AngoraContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
     b => b.MigrationsAssembly("DB-AngoraREST")));
@@ -98,6 +99,20 @@ builder.Services.AddAuthorization(); // Denne er nødvendig for at kunne bruge [A
 //----------------//END: IDENTITY SETUP
 
 var app = builder.Build();
+
+// Get the service scope factory
+var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+
+// Create a new scope
+using (var scope = serviceScopeFactory.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<DB_AngoraContext>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+    // Initialize the database
+    DbInitializer.Initialize(context, userManager, roleManager);
+}
 
 
 // Configure the HTTP request pipeline.
