@@ -1,5 +1,5 @@
 ﻿using DB_AngoraLib.Models;
-using DB_AngoraREST.Models;
+using DB_AngoraREST.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
@@ -54,21 +54,23 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterRequestDTO model)
+        public async Task<IActionResult> Register(RegisterRequestDTO regDTO)
         {
             if (ModelState.IsValid)
             {
                 var user = new User
                 {
-                    UserName = model.Email,
-                    Email = model.Email,
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    City = model.City
-                    // Tilføj andre felter her...
+                    UserName = regDTO.BreederRegNo,
+                    Email = regDTO.Email,
+                    PhoneNumber = regDTO.PhoneNum,
+                    FirstName = regDTO.FirstName,
+                    LastName = regDTO.LastName,
+                    City = regDTO.City,
+                    RoadNameAndNo = regDTO.RoadNameAndNo,
+                    ZipCode = regDTO.ZipCode,
                 };
 
-                var result = await _userManager.CreateAsync(user, model.Password);
+                var result = await _userManager.CreateAsync(user, regDTO.Password);
 
                 if (result.Succeeded)
                 {

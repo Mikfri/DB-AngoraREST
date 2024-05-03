@@ -3,12 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace DB_AngoraREST.Migrations
 {
     /// <inheritdoc />
-    public partial class DbAngMig01 : Migration
+    public partial class DbAngoraMig01 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -276,41 +274,6 @@ namespace DB_AngoraREST.Migrations
                         principalTable: "Rabbits",
                         principalColumns: new[] { "RightEarId", "LeftEarId" },
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.InsertData(
-                table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "City", "ConcurrencyStamp", "Email", "EmailConfirmed", "FirstName", "IsAdmin", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "RoadNameAndNo", "SecurityStamp", "TwoFactorEnabled", "UserName", "ZipCode" },
-                values: new object[,]
-                {
-                    { "5053", 0, "Benløse", "92f8a18a-d4ef-4921-8726-90d9212daca4", "MajaJoensen89@gmail.com", false, "Maja", false, "Hulstrøm", false, null, "MAJAJOENSEN89@GMAIL.COM", "MAJAJOENSEN89@GMAIL.COM", "AQAAAAIAAYagAAAAEHK61eOGf58GqXplrh3vk+pe+CMCsrGYRkQxoFki4smrGzPXOsZffEKtvtxKluJzVA==", "28733085", false, "Sletten 4", "30b9bfd7-ae0b-481d-9578-9b2cc58dc280", false, "MajaJoensen89@gmail.com", 4100 },
-                    { "5095", 0, "Kirke Såby", "8f5a1ade-4091-42df-93b5-e11de2cadbbc", "IdaFriborg87@gmail.com", false, "Ida", true, "Friborg", false, null, "IDAFRIBORG87@GMAIL.COM", "IDAFRIBORG87@GMAIL.COM", "AQAAAAIAAYagAAAAEIUg9b879kFA8KljByofv0LHCi/7MIJ5nCL0mUTmqSQ+gpRG1VJ318gNapCt0iEQYQ==", "27586455", false, "Fynsvej 14", "7e832a3e-57d9-4217-a66e-a462b85ebfcf", false, "IdaFriborg87@gmail.com", 4060 }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Rabbits",
-                columns: new[] { "LeftEarId", "RightEarId", "ApprovedRaceColorCombination", "Color", "DateOfBirth", "DateOfDeath", "Gender", "IsPublic", "NickName", "OwnerId", "Race" },
-                values: new object[,]
-                {
-                    { "3020", "4398", null, 26, new DateOnly(2022, 7, 22), null, 1, 0, "Douglas", "5053", 10 },
-                    { "105", "4640", null, 13, new DateOnly(2021, 4, 5), null, 1, 0, "Ingolf", "5095", 0 },
-                    { "120", "4640", null, 16, new DateOnly(2021, 5, 11), new DateOnly(2023, 11, 3), 0, 0, "Mulan", "5095", 0 },
-                    { "206", "4977", null, 15, new DateOnly(2022, 2, 2), null, 1, 0, "Dario", "5053", 17 },
-                    { "213", "4977", null, 6, new DateOnly(2022, 3, 24), null, 0, 0, "Frida", "5053", 17 },
-                    { "315", "4977", null, 15, new DateOnly(2023, 1, 13), null, 0, 0, "Miranda", "5053", 17 },
-                    { "0223", "5053", null, 16, new DateOnly(2023, 5, 30), null, 0, 0, "Chinchou", "5053", 17 },
-                    { "0423", "5053", null, 15, new DateOnly(2023, 5, 30), null, 0, 0, "Gastly", "5053", 17 },
-                    { "0623", "5053", null, 19, new DateOnly(2023, 8, 17), null, 0, 0, "Karla", "5053", 17 },
-                    { "0723", "5053", null, 21, new DateOnly(2024, 10, 15), null, 1, 0, "Sandshrew", "5053", 17 },
-                    { "0823", "5053", null, 25, new DateOnly(2024, 10, 15), null, 0, 0, "Pepsi", "5053", 17 },
-                    { "0923", "5053", null, 25, new DateOnly(2024, 10, 15), new DateOnly(2024, 3, 14), 1, 0, "Cola", "5053", 17 },
-                    { "1023", "5053", null, 21, new DateOnly(2024, 10, 15), null, 0, 0, "Marabou", "5053", 17 },
-                    { "001", "5095", null, 18, new DateOnly(2019, 2, 27), new DateOnly(2024, 4, 13), 0, 0, "Kaliba", "5095", 0 },
-                    { "002", "5095", null, 16, new DateOnly(2020, 6, 12), new DateOnly(2022, 7, 22), 0, 0, "Sov", "5095", 0 },
-                    { "003", "5095", null, 26, new DateOnly(2020, 3, 12), new DateOnly(2023, 11, 3), 0, 0, "Smørklat Smør", "5095", 0 },
-                    { "2104", "M63", null, 30, new DateOnly(2023, 5, 22), null, 0, 0, "Ortovi", "5053", 17 },
-                    { "3102", "M63", null, 19, new DateOnly(2023, 9, 23), null, 0, 0, "Xådda", "5053", 17 },
-                    { "023", "V23", null, 4, new DateOnly(2020, 4, 10), new DateOnly(2024, 4, 23), 1, 0, "Aslan", "5053", 17 }
                 });
 
             migrationBuilder.CreateIndex(

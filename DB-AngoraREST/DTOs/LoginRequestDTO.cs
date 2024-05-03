@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DB_AngoraREST.Models
+namespace DB_AngoraREST.DTOs
 {
     public class LoginRequestDTO
     {
