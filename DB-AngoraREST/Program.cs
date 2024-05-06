@@ -24,6 +24,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<RabbitValidator>();
 
 builder.Services.AddDistributedMemoryCache(); // Adds a default in-memory implementation of IDistributedCache
+
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -102,18 +103,18 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-//// Get the service scope factory
-//var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
-//// Create a new scope
-//using (var scope = serviceScopeFactory.CreateScope())
-//{
-//    var context = scope.ServiceProvider.GetRequiredService<DB_AngoraContext>();
-//    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+// Get the service scope factory
+var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+// Create a new scope
+using (var scope = serviceScopeFactory.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<DB_AngoraContext>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-//    // Initialize the database
-//    DbInitializer.Initialize(context, userManager, roleManager);
-//}
+    // Initialize the database
+    DbInitializer.Initialize(context, userManager, roleManager);
+}
 
 
 // Configure the HTTP request pipeline.

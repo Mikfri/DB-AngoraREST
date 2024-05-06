@@ -26,10 +26,13 @@ namespace DB_AngoraREST.DB_DataStarter
             var mockRabbits = MockRabbits.GetMockRabbits();
             foreach (var rabbit in mockRabbits)
             {
+                // Set the User property of the Rabbit object to the corresponding User
+                rabbit.User = context.Users.FirstOrDefault(u => u.Id == rabbit.OwnerId);
                 context.Rabbits.Add(rabbit);
             }
 
             context.SaveChanges();
         }
+
     }
 }

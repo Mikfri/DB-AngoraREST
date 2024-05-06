@@ -1,5 +1,9 @@
-﻿using DB_AngoraLib.Models;
+﻿using DB_AngoraLib.DTOs;
+using DB_AngoraLib.Models;
+using DB_AngoraLib.Services.RabbitService;
+using DB_AngoraLib.Services.UserService;
 using DB_AngoraREST.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
@@ -18,12 +22,16 @@ namespace DB_AngoraREST.Controllers
 
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly IUserService _userService;
+        private readonly IRabbitService _rabbitService;
         private readonly IConfiguration _configuration;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IUserService userService, IRabbitService rabbitService, IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _userService = userService;
+            _rabbitService = rabbitService;
             _configuration = configuration;
         }
 
@@ -78,6 +86,7 @@ namespace DB_AngoraREST.Controllers
                 var authClaims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id), // added
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 };
 
@@ -105,7 +114,43 @@ namespace DB_AngoraREST.Controllers
             return Unauthorized();
         }
 
+        [HttpGet("UserRabbitCollection")]
+        [Authorize]
+        public async Task<IActionResult> GetMyRabbits()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine($"Getting rabbits for user with ID: {userId}");
 
+            var userKeyDto = new User_KeyDTO { BreederRegNo = userId };
+            var rabbits = await _userService.GetCurrentUsersRabbitCollection_ByProperties(userKeyDto);
+
+            Console.WriteLine($"Got {rabbits.Count} rabbits for user with ID: {userId}");
+
+            return Ok(rabbits);
+        }
+
+        
+
+        [HttpGet("UserRabbitCollection2")]
+        [Authorize]
+        public async Task<IActionResult> GetMyRabbits(
+            [FromQuery] string rightEarId = null,
+            [FromQuery] string leftEarId = null,
+            [FromQuery] string nickName = null,
+            [FromQuery] Race? race = null,
+            [FromQuery] Color? color = null,
+            [FromQuery] Gender? gender = null,
+            [FromQuery] IsPublic? isPublic = null,
+            [FromQuery] bool? isJuvenile = null,
+            [FromQuery] DateOnly? dateOfBirth = null,
+            [FromQuery] DateOnly? dateOfDeath = null)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userKeyDto = new User_KeyDTO { BreederRegNo = userId };
+
+            var rabbits = await _userService.GetCurrentUsersRabbitCollection_ByProperties(userKeyDto, rightEarId, leftEarId, nickName, race, color, gender, isPublic, isJuvenile, dateOfBirth, dateOfDeath);
+            return Ok(rabbits);
+        }
 
     }
 }
