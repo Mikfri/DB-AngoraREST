@@ -14,7 +14,7 @@ namespace DB_AngoraREST.DB_DataStarter
             // Look for any users.
             if (context.Users.Any())
             {
-                return;   // DB has been seeded
+                return;   // DB has already been seeded
             }
 
             var mockUsers = MockUsers.GetMockUsers();

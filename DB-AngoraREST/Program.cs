@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
+using System;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,97 +23,97 @@ builder.Services.AddScoped<IGRepository<User>, GRepository<User>>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<RabbitValidator>();
 
-
-//-------: STANDARD IDENTITY-USER SETUP
-//builder.Services.AddIdentityApiEndpoints<User>()
-
-//    .AddEntityFrameworkStores<DB_AngoraContext>();
-//---------------------: IDENTITY SETUP
-builder.Services.AddIdentity<User, IdentityRole>()
-    .AddEntityFrameworkStores<DB_AngoraContext>()
-    .AddDefaultTokenProviders();
-
-
-//builder.Services.Configure<IdentityOptions>(options =>
-//{
-//    // Password settings.
-//    options.Password.RequireDigit = true;
-//    options.Password.RequireLowercase = true;
-//    options.Password.RequireNonAlphanumeric = true;
-//    options.Password.RequireUppercase = true;
-//    options.Password.RequiredLength = 6;
-//    options.Password.RequiredUniqueChars = 1;
-
-//    // Lockout settings.
-//    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-//    options.Lockout.MaxFailedAccessAttempts = 5;
-//    options.Lockout.AllowedForNewUsers = true;
-
-//    // User settings.
-//    options.User.AllowedUserNameCharacters =
-//    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-//    options.User.RequireUniqueEmail = false;
-//});
+builder.Services.AddDistributedMemoryCache(); // Adds a default in-memory implementation of IDistributedCache
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen(); // Dette er den originale linje
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("JWT-bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-        In = ParameterLocation.Header,
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-    options.OperationFilter<SecurityRequirementsOperationFilter>();
-});
+builder.Services.AddEndpointsApiExplorer(); // Swagger API-dokumentation
 
 // -----------------: DB CONNECTION-STRING & MIGRATION SETUP
 builder.Services.AddDbContext<DB_AngoraContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
     b => b.MigrationsAssembly("DB-AngoraREST")));
 
-builder.Services.AddAuthorization(); // Denne er nødvendig for at kunne bruge [Authorize] attributten i controllers
+//--------: IDENTITY & JWT: Add Authentication
+// IDENTITY
+builder.Services.AddIdentity<User, IdentityRole>()
+    .AddEntityFrameworkStores<DB_AngoraContext>()
+    .AddSignInManager()
+    .AddRoles<IdentityRole>();
 
 
-//------- JWT SETUP
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//    .AddJwtBearer(options =>
-//    {
-//        options.TokenValidationParameters = new TokenValidationParameters
-//        {
-//            ValidateIssuer = true,
-//            ValidateAudience = true,
-//            ValidateLifetime = true,
-//            ValidateIssuerSigningKey = true,
-//            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-//            ValidAudience = builder.Configuration["Jwt:Issuer"],
-//            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-//        };
-//    });
-//----------------//END: IDENTITY SETUP
+// JWT
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
+
+
+//--------: SWAGGER Authentication UI
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter JWT with Bearer into field",
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
+    });
+});
+
 
 var app = builder.Build();
 
-// Get the service scope factory
-var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+//// Get the service scope factory
+//var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+//// Create a new scope
+//using (var scope = serviceScopeFactory.CreateScope())
+//{
+//    var context = scope.ServiceProvider.GetRequiredService<DB_AngoraContext>();
+//    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-// Create a new scope
-using (var scope = serviceScopeFactory.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<DB_AngoraContext>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-    // Initialize the database
-    DbInitializer.Initialize(context, userManager, roleManager);
-}
+//    // Initialize the database
+//    DbInitializer.Initialize(context, userManager, roleManager);
+//}
 
 
 // Configure the HTTP request pipeline.
@@ -121,15 +122,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-
-//app.MapIdentityApi<User>(); // Dette middleware gør at man kan bruge IdentityUser i controllers. 
-
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
-
 app.UseAuthentication();    // IdentityUser setup
+app.UseSession();           // IdentityUser setup
+app.UseAuthorization();
 
 app.MapControllers();
 
