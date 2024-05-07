@@ -98,46 +98,5 @@ namespace DB_AngoraREST.Controllers
 
 
 
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [Authorize]
-        [HttpGet("RabbitCollection")]
-        public async Task<IActionResult> GetCurrentUsersRabbitCollection_ByProperties(
-            [FromQuery] string rightEarId = null,
-            [FromQuery] string leftEarId = null,
-            [FromQuery] string nickName = null,
-            [FromQuery] Race? race = null,
-            [FromQuery] Color? color = null,
-            [FromQuery] Gender? gender = null,
-            [FromQuery] IsPublic? isPublic = null,
-            [FromQuery] bool? isJuvenile = null,
-            [FromQuery] DateOnly? dateOfBirth = null,
-            [FromQuery] DateOnly? dateOfDeath = null)
-        {
-            // Get the current user's ID from the User property
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // Create a new User_KeyDTO with the user's ID
-            var userKeyDto = new User_KeyDTO { BreederRegNo = userId };
-
-            // Pass the User_KeyDTO to your service method
-            var result = await _userService.GetCurrentUsersRabbitCollection_ByProperties(userKeyDto, rightEarId, leftEarId, nickName, race, color, gender, isPublic, isJuvenile, dateOfBirth, dateOfDeath);
-            return Ok(result);
-        }
-
-        //[HttpGet("my-rabbits")]
-        //public async Task<IActionResult> GetMyRabbits()
-        //{
-        //    var user = await _userManager.GetUserAsync(User);
-        //    if (user == null)
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //    var rabbits = await _userService.GetCurrentUsersRabbitCollection_ByProperties(user.Id,);
-        //    return Ok(rabbits);
-        //}
-
-
     }
 }

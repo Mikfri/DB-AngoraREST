@@ -13,6 +13,7 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +76,7 @@ builder.Services.AddAuthentication(options =>
 //--------: SWAGGER Authentication UI
 builder.Services.AddSwaggerGen(options =>
 {
+    options.UseInlineDefinitionsForEnums(); // Dropdowns for enums
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -98,6 +100,12 @@ builder.Services.AddSwaggerGen(options =>
             new string[] { }
         }
     });
+});
+
+//--------: JSON ENUM CONVERTER
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
 

@@ -114,43 +114,60 @@ namespace DB_AngoraREST.Controllers
             return Unauthorized();
         }
 
-        [HttpGet("UserRabbitCollection")]
+        [HttpGet("MyRabbitCollection")]
         [Authorize]
         public async Task<IActionResult> GetMyRabbits()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Console.WriteLine($"Getting rabbits for user with ID: {userId}");
 
-            var userKeyDto = new User_KeyDTO { BreederRegNo = userId };
-            var rabbits = await _userService.GetCurrentUsersRabbitCollection_ByProperties(userKeyDto);
+            var rabbits = await _userService.GetCurrentUsersRabbitCollection(userId);
 
             Console.WriteLine($"Got {rabbits.Count} rabbits for user with ID: {userId}");
 
             return Ok(rabbits);
         }
 
-        
 
-        [HttpGet("UserRabbitCollection2")]
+        [HttpGet("MyFilteredRabbitCollection")]
         [Authorize]
-        public async Task<IActionResult> GetMyRabbits(
+        public async Task<IActionResult> GetMyFilteredRabbits(
             [FromQuery] string rightEarId = null,
             [FromQuery] string leftEarId = null,
             [FromQuery] string nickName = null,
-            [FromQuery] Race? race = null,
-            [FromQuery] Color? color = null,
-            [FromQuery] Gender? gender = null,
-            [FromQuery] IsPublic? isPublic = null,
-            [FromQuery] bool? isJuvenile = null,
-            [FromQuery] DateOnly? dateOfBirth = null,
-            [FromQuery] DateOnly? dateOfDeath = null)
+            [FromQuery] string race = null,
+            [FromQuery] string color = null,
+            [FromQuery] string gender = null)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userKeyDto = new User_KeyDTO { BreederRegNo = userId };
 
-            var rabbits = await _userService.GetCurrentUsersRabbitCollection_ByProperties(userKeyDto, rightEarId, leftEarId, nickName, race, color, gender, isPublic, isJuvenile, dateOfBirth, dateOfDeath);
+            Race? raceEnum = null;
+            if (!string.IsNullOrEmpty(race))
+            {
+                Enum.TryParse(race, out Race parsedRace);
+                raceEnum = parsedRace;
+            }
+
+            Color? colorEnum = null;
+            if (!string.IsNullOrEmpty(color))
+            {
+                Enum.TryParse(color, out Color parsedColor);
+                colorEnum = parsedColor;
+            }
+
+            Gender? genderEnum = null;
+            if (!string.IsNullOrEmpty(gender))
+            {
+                Enum.TryParse(gender, out Gender parsedGender);
+                genderEnum = parsedGender;
+            }
+
+            var rabbits = await _userService.GetFilteredRabbitCollection(userId, rightEarId, leftEarId, nickName, raceEnum, colorEnum, genderEnum);
             return Ok(rabbits);
         }
+
+
+
 
     }
 }
