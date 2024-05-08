@@ -76,11 +76,11 @@ builder.Services.AddAuthentication(options =>
 //--------: SWAGGER Authentication UI
 builder.Services.AddSwaggerGen(options =>
 {
-    options.UseInlineDefinitionsForEnums(); // Dropdowns for enums
+    //options.UseInlineDefinitionsForEnums();
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Description = "Please enter JWT with Bearer into field",
+        Description = "Please enter JWT with Bearer into field. Example\n Bearer {token}",
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"

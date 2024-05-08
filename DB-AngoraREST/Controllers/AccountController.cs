@@ -141,6 +141,8 @@ namespace DB_AngoraREST.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            //------: TRY PARSE ENUMS:
+            // Hvis der bare benytte Enum.Parse (ikke Enum.TryParse) åbner vi op for der kan kastes exceptions, som gør systemet mere sårbart, for DDoS.
             Race? raceEnum = null;
             if (!string.IsNullOrEmpty(race))
             {

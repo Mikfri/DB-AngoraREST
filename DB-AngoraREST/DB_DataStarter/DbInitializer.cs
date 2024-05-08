@@ -31,8 +31,19 @@ namespace DB_AngoraREST.DB_DataStarter
                 context.Rabbits.Add(rabbit);
             }
 
+            // Create roles
+            var mockRoles = MockRoles.GetMockRoles();
+            foreach (var role in mockRoles)
+            {
+                if (!roleManager.RoleExistsAsync(role).Result)
+                {
+                    roleManager.CreateAsync(new IdentityRole(role)).Wait();
+                }
+            }
+
             context.SaveChanges();
         }
+
 
     }
 }

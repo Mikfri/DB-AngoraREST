@@ -211,6 +211,9 @@ namespace DB_AngoraREST.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<string>("BreederRegNo")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("City")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -229,9 +232,6 @@ namespace DB_AngoraREST.Migrations
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool?>("IsAdmin")
-                        .HasColumnType("bit");
 
                     b.Property<string>("LastName")
                         .IsRequired()

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DB_AngoraREST.Migrations
 {
     [DbContext(typeof(DB_AngoraContext))]
-    [Migration("20240506111335_DbAngoraMig03")]
-    partial class DbAngoraMig03
+    [Migration("20240508155656_DbAngorMig01")]
+    partial class DbAngorMig01
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -214,6 +214,9 @@ namespace DB_AngoraREST.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<string>("BreederRegNo")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("City")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -232,9 +235,6 @@ namespace DB_AngoraREST.Migrations
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool?>("IsAdmin")
-                        .HasColumnType("bit");
 
                     b.Property<string>("LastName")
                         .IsRequired()

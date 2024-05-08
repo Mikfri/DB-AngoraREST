@@ -33,7 +33,7 @@ namespace DB_AngoraREST.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpGet("GetRabbitByBreederRegNo/{breederRegNo}")]
+        [HttpGet("GetRabbitByUserId/{breederRegNo}")]
         public async Task<ActionResult<IEnumerable<Rabbit>>> GetRabbitsByBreeder(string breederRegNo)
         {
             var rabbits = await _rabbitService.GetAllRabbits_ByBreederRegAsync(breederRegNo);
@@ -46,18 +46,15 @@ namespace DB_AngoraREST.Controllers
 
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [HttpPost]
+        [HttpPost("CreateRabbit")]
         [Authorize]
-        public async Task<IActionResult> AddRabbit([FromBody] Rabbit_BasicsDTO newRabbitDto)
+        public async Task<IActionResult> AddRabbit([FromBody] RabbitDTO newRabbitDto)
         {
             // Get the current user's ID from the User property
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // Create a new User_KeyDTO with the user's ID
-            var userKeyDto = new User_KeyDTO { BreederRegNo = userId };
-
-            // Pass the User_KeyDTO and Rabbit_BasicsDTO to your service method
-            await _rabbitService.AddRabbit_ToCurrentUserAsync(userKeyDto, newRabbitDto);
+            // Pass the userId and newRabbitDto to your service method
+            await _rabbitService.AddRabbit_ToCurrentUserAsync(userId, newRabbitDto);
 
             return Ok();
         }

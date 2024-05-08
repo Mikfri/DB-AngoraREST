@@ -28,42 +28,7 @@ namespace DB_AngoraREST.Controllers
             _userService = userService;
             _logger = logger;
         }
-
-        // todo: Du har liiige fået flyttet login fra AccoutController.. 
-
-        //[HttpPost("Login")]
-        //public async Task<IActionResult> Login(UserLoginDTO userLoginDto)
-        //{
-        //    // Validate the user's credentials
-        //    var user = await _userService.Login(userLoginDto);
-
-        //    // If the user's credentials are invalid, return 401
-        //    if (user == null)
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //    // Create the claims
-        //    var claims = new List<Claim>
-        //    {
-        //        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        //        new Claim("BreederRegNo", user.Id),
-        //        // Add other claims as needed
-        //    };
-
-        //    // Create the claims identity
-        //    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-        //    // Sign the user in
-        //    await HttpContext.SignInAsync(
-        //        CookieAuthenticationDefaults.AuthenticationScheme,
-        //        new ClaimsPrincipal(claimsIdentity),
-        //        new AuthenticationProperties());
-
-        //    // Return a success response
-        //    return Ok();
-        //}
-
+        
 
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -84,7 +49,7 @@ namespace DB_AngoraREST.Controllers
             var breederRegNo = User.FindFirstValue("BreederRegNo");
 
             // Get the user from the database
-            var user = await _userService.GetUserByBreederRegNoAsync(new User_KeyDTO { BreederRegNo = breederRegNo });
+            var user = await _userService.GetUserByBreederRegNoAsync(new User_BreederKeyDTO { BreederRegNo = breederRegNo });
 
             // If the user is not found, return 404
             if (user == null)
