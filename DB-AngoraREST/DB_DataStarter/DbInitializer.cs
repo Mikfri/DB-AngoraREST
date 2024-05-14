@@ -17,11 +17,21 @@ namespace DB_AngoraREST.DB_DataStarter
                 return;   // DB has already been seeded
             }
 
-            var mockUsers = MockUsers.GetMockUsers();
-            foreach (var user in mockUsers)
+            //var mockUsers = MockUsers.GetMockUsers();
+            //foreach (var user in mockUsers)
+            //{
+            //    userManager.CreateAsync(user, user.Password).Wait();
+            //}
+
+
+            var mockUsersWithRoles = MockUsers.GetMockUsersWithRoles();
+            foreach (var mockUserWithRole in mockUsersWithRoles)
             {
-                userManager.CreateAsync(user, user.Password).Wait();
+                userManager.CreateAsync(mockUserWithRole.User, mockUserWithRole.User.Password).Wait();
+                userManager.AddToRoleAsync(mockUserWithRole.User, mockUserWithRole.Role).Wait();
             }
+
+            
 
             var mockRabbits = MockRabbits.GetMockRabbits();
             foreach (var rabbit in mockRabbits)

@@ -121,7 +121,7 @@ namespace DB_AngoraREST.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Console.WriteLine($"Getting rabbits for user with ID: {userId}");
 
-            var rabbits = await _userService.GetCurrentUsersRabbitCollection(userId);
+            var rabbits = await _userService.GetMyRabbitCollection(userId);
 
             Console.WriteLine($"Got {rabbits.Count} rabbits for user with ID: {userId}");
 
@@ -164,7 +164,7 @@ namespace DB_AngoraREST.Controllers
                 genderEnum = parsedGender;
             }
 
-            var rabbits = await _userService.GetFilteredRabbitCollection(userId, rightEarId, leftEarId, nickName, raceEnum, colorEnum, genderEnum);
+            var rabbits = await _userService.GetMyRabbitCollection_Filtered(userId, rightEarId, leftEarId, nickName, raceEnum, colorEnum, genderEnum);
             return Ok(rabbits);
         }
 

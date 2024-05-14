@@ -40,28 +40,6 @@ namespace DB_AngoraREST.Controllers
             return Ok(users);
         }
 
-
-        [HttpGet("GetCurrentUserBreederRegNo")]
-        [Authorize]
-        public async Task<ActionResult<string>> GetCurrentUserBreederRegNo()
-        {
-            // Get the current user's BreederRegNo from the User property
-            var breederRegNo = User.FindFirstValue("BreederRegNo");
-
-            // Get the user from the database
-            var user = await _userService.GetUserByBreederRegNoAsync(new User_BreederKeyDTO { BreederRegNo = breederRegNo });
-
-            // If the user is not found, return 404
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            // Return the user's BreederRegNo
-            return Ok(user.Id);
-        }
-
-
-
+        
     }
 }
