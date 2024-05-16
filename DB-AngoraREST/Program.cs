@@ -1,10 +1,15 @@
 using DB_AngoraLib.EF_DbContext;
 using DB_AngoraLib.Models;
 using DB_AngoraLib.Repository;
+using DB_AngoraLib.Services.AccountService;
+using DB_AngoraLib.Services.EmailService;
 using DB_AngoraLib.Services.RabbitService;
+using DB_AngoraLib.Services.RoleService;
+using DB_AngoraLib.Services.SigninService;
 using DB_AngoraLib.Services.UserService;
 using DB_AngoraLib.Services.ValidationService;
 using DB_AngoraREST.DB_DataStarter;
+using DB_AngoraREST.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,10 +24,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddScoped<IGRepository<Rabbit>, GRepository<Rabbit>>();
-builder.Services.AddScoped<IRabbitService, RabbitService>();
+builder.Services.AddScoped<IRabbitService, RabbitServices>();
 builder.Services.AddScoped<IGRepository<User>, GRepository<User>>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IEmailService, EmailServices>();
+
 builder.Services.AddScoped<RabbitValidator>();
+builder.Services.AddScoped<TokenService>();
+// Mine Lib IdentityUser services
+builder.Services.AddScoped<ISigninService, SigninServices>();
+builder.Services.AddScoped<IAccountService, AccountServices>();
+builder.Services.AddScoped<IRoleService, RoleServices>();
+// END
 
 builder.Services.AddDistributedMemoryCache(); // Adds a default in-memory implementation of IDistributedCache
 
@@ -62,8 +75,8 @@ builder.Services.AddAuthentication(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],

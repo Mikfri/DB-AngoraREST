@@ -6,7 +6,7 @@ namespace DB_AngoraREST.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EnumsController : ControllerBase
+    public class EnumController : ControllerBase
     {
         [HttpGet("Races")]
         public IActionResult GetRaces()
