@@ -85,6 +85,16 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RabbitPermission", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c =>
+                (c.Type == "Permission" && (c.Value == "CRUD_All_Rabbits" || c.Value == "CRUD_My_Rabbits"))
+            )
+        )
+    );
+});
 
 //--------: SWAGGER Authentication UI
 builder.Services.AddSwaggerGen(options =>

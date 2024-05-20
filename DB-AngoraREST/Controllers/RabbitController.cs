@@ -27,7 +27,7 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [Authorize(Roles = "Admin")]
-        [HttpGet("GetAllRabbits")]
+        [HttpGet("Get_All")]
         public async Task<ActionResult<IEnumerable<Rabbit>>> GetAllRabbits()
         {
             var rabbits = await _rabbitService.GetAllRabbitsAsync();
@@ -38,7 +38,7 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpGet("GetRabbitByEarTags/{rightEarId}-{leftEarId}")]
+        [HttpGet("Get_ByByEarTags/{rightEarId}-{leftEarId}")]
         [Authorize(Roles = "Admin, Moderator")]
         public async Task<ActionResult<Rabbit>> GetRabbitByEarTags(string rightEarId, string leftEarId)
         {
@@ -54,7 +54,7 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpGet("GetRabbitByUserId/{breederRegNo}")]
+        [HttpGet("Get_ByUsersBreederRegNo/{breederRegNo}")]
         [Authorize(Roles = "Admin, Moderator")]
         public async Task<ActionResult<IEnumerable<Rabbit>>> GetRabbitsByBreeder(string breederRegNo)
         {
@@ -65,27 +65,13 @@ namespace DB_AngoraREST.Controllers
             }
             return Ok(rabbits);
         }
-
-        //[ProducesResponseType(StatusCodes.Status200OK)]    // TODO: Får vi 201 Created tilbage?
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[HttpPost("AddRabbit_ToMyCollection")]
-        //[Authorize(Roles = "Admin, Breeder, Moderator")]
-        //public async Task<IActionResult> AddRabbit([FromBody] RabbitDTO newRabbitDto)
-        //{
-        //    // Get the current user's ID from the User property
-        //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        //    // Pass the userId and newRabbitDto to your service method
-        //    await _rabbitService.AddRabbit_ToCurrentUserAsync(userId, newRabbitDto);
-
-        //    return Ok();
-        //}
+            
 
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpPost("AddRabbit_ToMyCollection")]
+        [HttpPost("Create")]
         [Authorize(Roles = "Admin, Breeder, Moderator")]
         public async Task<IActionResult> AddRabbit([FromBody] RabbitDTO newRabbitDto)
         {
@@ -112,9 +98,9 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [Authorize(Roles = "Admin, Moderator, Breeder")]
-        [HttpPut("UpdateMyRabbit/{rightEarId}-{leftEarId}")]
-        public async Task<IActionResult> UpdateMyRabbit(string rightEarId, string leftEarId, [FromBody] Rabbit_UpdateDTO updatedRabbit)
+        [Authorize(Policy = "RabbitPermission")]
+        [HttpPut("Update/{rightEarId}-{leftEarId}")]
+        public async Task<IActionResult> UpdateRabbit(string rightEarId, string leftEarId, [FromBody] Rabbit_UpdateDTO updatedRabbit)
         {
             // Get the current user's ID from the User property
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -142,9 +128,9 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [Authorize(Roles = "Admin, Moderator, Breeder")]
-        [HttpDelete("DeleteMyRabbit/{rightEarId}-{leftEarId}")]
-        public async Task<IActionResult> DeleteMyRabbit(string rightEarId, string leftEarId)
+        [Authorize(Policy = "RabbitPermission")]
+        [HttpDelete("Delete/{rightEarId}-{leftEarId}")]
+        public async Task<IActionResult> DeleteRabbit(string rightEarId, string leftEarId)
         {
             // Get the current user's ID from the User property
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
