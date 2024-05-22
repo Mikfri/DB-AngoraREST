@@ -87,10 +87,10 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("RabbitPermission", policy =>
+    options.AddPolicy("Rabbit_CRUD", policy =>
         policy.RequireAssertion(context =>
             context.User.HasClaim(c =>
-                (c.Type == "Permission" && (c.Value == "CRUD_All_Rabbits" || c.Value == "CRUD_My_Rabbits"))
+                (c.Type == "RolePermission" && (c.Value == "CRUD_All_Rabbits" || c.Value == "CRUD_My_Rabbits"))
             )
         )
     );

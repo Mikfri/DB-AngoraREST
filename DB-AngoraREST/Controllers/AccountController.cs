@@ -51,23 +51,24 @@ namespace DB_AngoraREST.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _accountService.Register_BasicUserAsync(newUserDto);
+                var response = await _accountService.Register_BasicUserAsync(newUserDto);
 
-                if (result.Succeeded)
+                if (response.IsSuccessful)
                 {
-                    return Ok();
+                    return Ok(response);
                 }
 
                 // Hvis der er fejl, tilføj dem til ModelState
-                foreach (var error in result.Errors)
+                foreach (var error in response.Errors)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    ModelState.AddModelError(string.Empty, error);
                 }
             }
 
             // Hvis vi er nået hertil, er der noget galt, vis formular igen
             return BadRequest(ModelState);
         }
+
 
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
