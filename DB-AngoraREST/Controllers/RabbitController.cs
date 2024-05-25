@@ -42,27 +42,24 @@ namespace DB_AngoraREST.Controllers
         [Authorize(Roles = "Admin, Moderator, Breeder")]
         public async Task<ActionResult<Rabbit_ProfileDTO>> GetRabbit_ProfileByEarTags(string rightEarId, string leftEarId)
         {
-            try
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userClaims = User.Claims.ToList();
+            var rabbitProfile = await _rabbitService.GetRabbit_ProfileAsync(currentUserId, rightEarId, leftEarId, userClaims);
+
+            if (rabbitProfile == null)
             {
-                var rabbit = await _rabbitService.GetRabbit_ProfileAsync(rightEarId, leftEarId);
-                if (rabbit == null)
-                {
-                    return NotFound();
-                }
-                return Ok(rabbit);
+                return NotFound();
             }
-            catch (InvalidOperationException ex)    // ved at have catch på vil RabbitService fejl beskeden kunne sendes tilbage til klienten
-            {
-                // Log the error here if needed
-                return BadRequest(new { message = ex.Message });
-            }
+
+            return Ok(rabbitProfile);
         }
+
 
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpGet("By_User/{breederRegNo}")]
+        [HttpGet("ByBreeder/{breederRegNo}")]
         [Authorize(Roles = "Admin, Moderator")]
         public async Task<ActionResult<IEnumerable<Rabbit>>> GetRabbitsByBreeder(string breederRegNo)
         {
@@ -105,7 +102,7 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [Authorize(Policy = "Rabbit_CRUD")]
+        [Authorize(Policy = "UpdateRabbit")]
         [HttpPut("Update/{rightEarId}-{leftEarId}")]
         public async Task<ActionResult<Rabbit_ProfileDTO>> UpdateRabbit(string rightEarId, string leftEarId, [FromBody] Rabbit_UpdateDTO updatedRabbit)
         {
@@ -139,7 +136,7 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [Authorize(Policy = "Rabbit_CRUD")]
+        [Authorize(Policy = "DeleteRabbit")]
         [HttpDelete("Delete/{rightEarId}-{leftEarId}")]
         public async Task<IActionResult> DeleteRabbit(string rightEarId, string leftEarId)
         {

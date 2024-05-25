@@ -23,19 +23,20 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+//-----------------: DB-AngoraLib Services
 builder.Services.AddScoped<IGRepository<Rabbit>, GRepository<Rabbit>>();
 builder.Services.AddScoped<IRabbitService, RabbitServices>();
 builder.Services.AddScoped<IGRepository<User>, GRepository<User>>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailServices>();
-
 builder.Services.AddScoped<RabbitValidator>();
-builder.Services.AddScoped<TokenService>();
 // Mine Lib IdentityUser services
 builder.Services.AddScoped<ISigninService, SigninServices>();
 builder.Services.AddScoped<IAccountService, AccountServices>();
 builder.Services.AddScoped<IRoleService, RoleServices>();
-// END
+//----------------: DB-AngoraREST Services
+//builder.Services.AddScoped<TokenService>();
+
 
 builder.Services.AddDistributedMemoryCache(); // Adds a default in-memory implementation of IDistributedCache
 
@@ -85,16 +86,6 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("Rabbit_CRUD", policy =>
-        policy.RequireAssertion(context =>
-            context.User.HasClaim(c =>
-                (c.Type == "RolePermission" && (c.Value == "CRUD_All_Rabbits" || c.Value == "CRUD_My_Rabbits"))
-            )
-        )
-    );
-});
 
 //--------: SWAGGER Authentication UI
 builder.Services.AddSwaggerGen(options =>
@@ -123,6 +114,23 @@ builder.Services.AddSwaggerGen(options =>
             new string[] { }
         }
     });
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    //-----------------: RABBIT POLICIES
+
+    options.AddPolicy("UpdateRabbit", policy =>
+    policy.RequireAssertion(context =>
+        context.User.HasClaim("RolePermission", "Update_Own_Rabbit") ||
+        context.User.HasClaim("RolePermission", "Update_Any_Rabbit")));
+
+    options.AddPolicy("DeleteRabbit", policy =>
+    policy.RequireAssertion(context =>
+        context.User.HasClaim("RolePermission", "Delete_Own_Rabbit") ||
+        context.User.HasClaim("RolePermission", "Delete_Any_Rabbit")));
+
+
 });
 
 //--------: JSON ENUM CONVERTER
