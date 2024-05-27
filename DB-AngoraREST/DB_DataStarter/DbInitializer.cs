@@ -6,44 +6,81 @@ using System.Security.Claims;
 
 namespace DB_AngoraREST.DB_DataStarter
 {
-    public static class DbInitializer
+    public class DbInitializer
     {
         public static void Initialize(DB_AngoraContext context, UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
         {
             context.Database.EnsureCreated();
 
-            // Look for any users.
+            // Hvis databasen allerede indeholder brugere, skal vi ikke gøre noget mere.
             if (context.Users.Any())
             {
-                return;   // DB has already been seeded
+                return;
             }
 
-            // Create roles and add claims to them
+            // Opret roller
             var mockRoles = MockRoles.GetMockRoles();
             foreach (var role in mockRoles)
             {
                 if (!roleManager.RoleExistsAsync(role.Name).Result)
                 {
-                    IdentityResult roleResult = roleManager.CreateAsync(role).Result;
-
-                    if (roleResult.Succeeded)
+                    var result = roleManager.CreateAsync(role).Result;
+                    if (!result.Succeeded)
                     {
-                        // Get the claims for this role
-                        var roleClaims = MockRoleClaims.GetMockRoleClaims().Where(rc => rc.RoleId == role.Id);
+                        throw new Exception($"Failed to create role {role.Name}");
+                    }
+                }
+            }
 
-                        foreach (var claim in roleClaims)
+            // Tilføj RoleClaims til roller
+            var roleClaims = RoleClaims.Get_AspNetRoleClaims();
+            foreach (var roleClaim in roleClaims)
+            {
+                var role = roleManager.FindByIdAsync(roleClaim.RoleId).Result;
+                if (role != null)
+                {
+                    var claim = new Claim(roleClaim.ClaimType, roleClaim.ClaimValue);
+                    var hasClaim = roleManager.GetClaimsAsync(role).Result.Any(c => c.Type == claim.Type && c.Value == claim.Value);
+                    if (!hasClaim)
+                    {
+                        var result = roleManager.AddClaimAsync(role, claim).Result;
+                        if (!result.Succeeded)
                         {
-                            roleManager.AddClaimAsync(role, new Claim(claim.ClaimType, claim.ClaimValue)).Wait();
+                            throw new Exception($"Failed to add claim {claim.Type} to role {role.Name}");
                         }
                     }
                 }
             }
 
+            //// Brug MockDataInitializer til at tilføje mock brugere og deres roller
+            //var mockDataInitializer = new MockDataInitializer(context, userManager);    // TODO: Test om dette virker fremfor nedestående //'kode'
+            //mockDataInitializer.Initialize();
+                       
+
+            // Hent mock brugere og deres roller
             var mockUsersWithRoles = MockUsers.GetMockUsersWithRoles();
+
             foreach (var mockUserWithRole in mockUsersWithRoles)
             {
-                userManager.CreateAsync(mockUserWithRole.User, mockUserWithRole.User.Password).Wait();
-                userManager.AddToRoleAsync(mockUserWithRole.User, mockUserWithRole.Role).Wait();
+                // Opret brugeren
+                var user = mockUserWithRole.User;
+                var result = userManager.CreateAsync(user, user.Password).Result;
+
+                if (result.Succeeded)
+                {
+                    // Tildel roller til brugeren
+                    foreach (var role in mockUserWithRole.Roles)
+                    {
+                        if (roleManager.RoleExistsAsync(role).Result)
+                        {
+                            userManager.AddToRoleAsync(user, role).Wait();
+                        }
+                    }
+
+                    // Tildel unikke UserClaims til brugeren
+                    var userClaims = MockUserClaims.GetMockUserClaimsForUser(user);
+                    userManager.AddClaimsAsync(user, userClaims).Wait();
+                }
             }
 
             var mockRabbits = MockRabbits.GetMockRabbits();

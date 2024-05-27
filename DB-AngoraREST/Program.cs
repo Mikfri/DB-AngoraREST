@@ -48,25 +48,23 @@ builder.Services.AddSession(options =>
 });
 
 
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer(); // Swagger API-dokumentation
 
 // -----------------: DB CONNECTION-STRING & MIGRATION SETUP
 builder.Services.AddDbContext<DB_AngoraContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
     b => b.MigrationsAssembly("DB-AngoraREST")));
 
-//--------: IDENTITY & JWT: Add Authentication
-// IDENTITY
+
+//------------------: IDENTITY
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<DB_AngoraContext>()
     .AddSignInManager()
     .AddRoles<IdentityRole>();
 
 
-// JWT
+//------------------: JWT
+//--------: Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -86,36 +84,7 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-
-//--------: SWAGGER Authentication UI
-builder.Services.AddSwaggerGen(options =>
-{
-    //options.UseInlineDefinitionsForEnums();
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Please enter JWT with Bearer into field. Example\n Bearer {token}",
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] { }
-        }
-    });
-});
-
+//--------: Authorization
 builder.Services.AddAuthorization(options =>
 {
     //-----------------: RABBIT POLICIES
@@ -133,6 +102,25 @@ builder.Services.AddAuthorization(options =>
 
 });
 
+//--------------------: SWAGGER
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer(); // Swagger API-dokumentation (///<summary> over dine API end-points vises i UI)
+
+//--------: Authentication UI
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("oath2", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer"
+    });
+    options.OperationFilter<SecurityRequirementsOperationFilter>(true, "oath2");
+});
+
+
+
 //--------: JSON ENUM CONVERTER
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -142,6 +130,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 
 var app = builder.Build();
 
+//-----------------: DB-INITIALIZER setup
 // Get the service scope factory
 var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
 // Create a new scope

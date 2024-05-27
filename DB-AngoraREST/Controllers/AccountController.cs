@@ -3,7 +3,7 @@ using DB_AngoraLib.Models;
 using DB_AngoraLib.Services.AccountService;
 using DB_AngoraLib.Services.RabbitService;
 using DB_AngoraLib.Services.SigninService;
-using DB_AngoraLib.Services.TokenService;
+//using DB_AngoraLib.Services.TokenService;
 using DB_AngoraLib.Services.UserService;
 using DB_AngoraREST.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -45,7 +45,7 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("Register_BasicUser")]
-        public async Task<IActionResult> Register(User_CreateBasicDTO newUserDto)
+        public async Task<IActionResult> Register(Register_CreateBasicUserDTO newUserDto)
         {
             if (ModelState.IsValid)
             {
