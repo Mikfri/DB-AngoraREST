@@ -98,8 +98,6 @@ builder.Services.AddAuthorization(options =>
     policy.RequireAssertion(context =>
         context.User.HasClaim("RolePermission", "Delete_Own_Rabbit") ||
         context.User.HasClaim("RolePermission", "Delete_Any_Rabbit")));
-
-
 });
 
 //--------------------: SWAGGER
@@ -119,6 +117,19 @@ builder.Services.AddSwaggerGen(options =>
     options.OperationFilter<SecurityRequirementsOperationFilter>(true, "oath2");
 });
 
+//--------------------: OAUTH2 eksempel.. måske der findes noget lettere.. // TODO: Implement this
+//builder.Services.AddAuthentication()
+//    .AddOAuth("OAuth2", options =>
+//    {
+//        options.ClientId = "<client-id>";
+//        options.ClientSecret = "<client-secret>";
+//        options.CallbackPath = new PathString("/callback");
+
+//        options.AuthorizationEndpoint = "https://<authorization-server>/authorize";
+//        options.TokenEndpoint = "https://<authorization-server>/token";
+
+//        options.SaveTokens = true;
+//    });
 
 
 //--------: JSON ENUM CONVERTER

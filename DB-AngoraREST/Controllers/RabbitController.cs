@@ -22,6 +22,36 @@ namespace DB_AngoraREST.Controllers
             _userService = userService;
         }
 
+        //-------------------------------: POST
+
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpPost("Create")]
+        [Authorize(Roles = "Admin, Breeder, Moderator")]
+        public async Task<ActionResult<Rabbit_ProfileDTO>> AddRabbit([FromBody] Rabbit_CreateDTO newRabbitDto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            try
+            {
+                // Pass the userId and newRabbitDto to your service method
+                var createdRabbit = await _rabbitService.AddRabbit_ToMyCollectionAsync(userId, newRabbitDto);
+
+                // Use CreatedAtAction with GetRabbit_ProfileByEarTags
+                return CreatedAtAction(nameof(GetRabbit_ProfileByEarTags), new { rightEarId = createdRabbit.RightEarId, leftEarId = createdRabbit.LeftEarId }, createdRabbit);
+            }
+            catch (InvalidOperationException ex)    // ved at have catch på vil RabbitService fejl beskeden kunne sendes tilbage til klienten
+            {
+                // Log the error here if needed
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
+        //-------------------------------: GET
+
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -71,33 +101,66 @@ namespace DB_AngoraREST.Controllers
             return Ok(rabbits);
         }
 
-
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpPost("Create")]
-        [Authorize(Roles = "Admin, Breeder, Moderator")]
-        public async Task<ActionResult<Rabbit_ProfileDTO>> AddRabbit([FromBody] Rabbit_CreateDTO newRabbitDto)
+        [HttpGet("Forsale")]
+        public async Task<ActionResult<List<Rabbit_PreviewDTO>>> GetAllRabbits_OpenProfile_Filtered(
+        [FromQuery] string rightEarId = null,
+        [FromQuery] string nickName = null,
+        [FromQuery] string race = null,
+        [FromQuery] string color = null,
+        [FromQuery] string gender = null,
+        [FromQuery] bool? isJuvenile = null,
+        [FromQuery] bool? approvedRaceColorCombination = null)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Race? raceEnum = null;
+            if (!string.IsNullOrEmpty(race))
+            {
+                Enum.TryParse(race, out Race parsedRace);
+                raceEnum = parsedRace;
+            }
+
+            Color? colorEnum = null;
+            if (!string.IsNullOrEmpty(color))
+            {
+                Enum.TryParse(color, out Color parsedColor);
+                colorEnum = parsedColor;
+            }
+
+            Gender? genderEnum = null;
+            if (!string.IsNullOrEmpty(gender))
+            {
+                Enum.TryParse(gender, out Gender parsedGender);
+                genderEnum = parsedGender;
+            }
+
+            var filter = new Rabbit_ForsaleFilterDTO
+            {
+                RightEarId = rightEarId,
+                NickName = nickName,
+                Race = raceEnum,
+                Color = colorEnum,
+                Gender = genderEnum,
+                IsJuvenile = isJuvenile,
+                ApprovedRaceColorCombination = approvedRaceColorCombination
+            };
 
             try
             {
-                // Pass the userId and newRabbitDto to your service method
-                var createdRabbit = await _rabbitService.AddRabbit_ToMyCollectionAsync(userId, newRabbitDto);
-
-                // Use CreatedAtAction with GetRabbit_ProfileByEarTags
-                return CreatedAtAction(nameof(GetRabbit_ProfileByEarTags), new { rightEarId = createdRabbit.RightEarId, leftEarId = createdRabbit.LeftEarId }, createdRabbit);
+                var filteredRabbits = await _rabbitService.GetAllRabbits_OpenProfile_Filtered(filter);
+                return Ok(filteredRabbits);
             }
-            catch (InvalidOperationException ex)    // ved at have catch på vil RabbitService fejl beskeden kunne sendes tilbage til klienten
+            catch (InvalidOperationException ex)
             {
-                // Log the error here if needed
                 return BadRequest(new { message = ex.Message });
             }
         }
 
 
+
+
+
+        //-------------------------------: PUT
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -106,19 +169,12 @@ namespace DB_AngoraREST.Controllers
         [HttpPut("Update/{rightEarId}-{leftEarId}")]
         public async Task<ActionResult<Rabbit_ProfileDTO>> UpdateRabbit(string rightEarId, string leftEarId, [FromBody] Rabbit_UpdateDTO updatedRabbit)
         {
-            // Get the current user's ID from the User property
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // Get the current user's claims
             var userClaims = User.Claims.ToList();
-
-            // Get the current user
-            var currentUser = await _userService.GetUserByIdAsync(userId);
 
             try
             {
-                // Pass the currentUser, rightEarId, leftEarId, updatedRabbit, and userClaims to your service method
-                var updatedRabbitDTO = await _rabbitService.UpdateRabbit_RBAC_Async(currentUser, rightEarId, leftEarId, updatedRabbit, userClaims);
+                var updatedRabbitDTO = await _rabbitService.UpdateRabbit_RBAC_Async(userId, rightEarId, leftEarId, updatedRabbit, userClaims);
                 if (updatedRabbitDTO == null)
                 {
                     return NotFound();
@@ -131,6 +187,7 @@ namespace DB_AngoraREST.Controllers
             }
         }
 
+        //-------------------------------: DELETE
 
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -138,29 +195,22 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [Authorize(Policy = "DeleteRabbit")]
         [HttpDelete("Delete/{rightEarId}-{leftEarId}")]
-        public async Task<IActionResult> DeleteRabbit(string rightEarId, string leftEarId)
+        public async Task<ActionResult<Rabbit_PreviewDTO>> DeleteRabbit(string rightEarId, string leftEarId)
         {
-            // Get the current user's ID from the User property
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // Get the current user's claims
             var userClaims = User.Claims.ToList();
-
-            // Get the current user
-            var currentUser = await _userService.GetUserByIdAsync(userId);
 
             try
             {
-                // Pass the currentUser, rightEarId, leftEarId, and userClaims to your service method
-                await _rabbitService.DeleteRabbit_RBAC_Async(currentUser, rightEarId, leftEarId, userClaims);
+                var rabbitPreviewDTO = await _rabbitService.DeleteRabbit_RBAC_Async(userId, rightEarId, leftEarId, userClaims);
+                return Ok(rabbitPreviewDTO);
             }
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
-
-            return Ok();
         }
+
 
     }
 }
