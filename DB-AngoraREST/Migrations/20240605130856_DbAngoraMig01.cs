@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DB_AngoraREST.Migrations
 {
     /// <inheritdoc />
-    public partial class DbAngorMig01 : Migration
+    public partial class DbAngoraMig01 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,7 +30,7 @@ namespace DB_AngoraREST.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    BreederRegNo = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BreederRegNo = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RoadNameAndNo = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -166,26 +166,42 @@ namespace DB_AngoraREST.Migrations
                 name: "Rabbits",
                 columns: table => new
                 {
-                    RightEarId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LeftEarId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    EarCombId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RightEarId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LeftEarId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OwnerId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     NickName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Race = table.Column<int>(type: "int", nullable: false),
                     Color = table.Column<int>(type: "int", nullable: false),
-                    ApprovedRaceColorCombination = table.Column<bool>(type: "bit", nullable: true),
                     DateOfBirth = table.Column<DateOnly>(type: "date", nullable: false),
                     DateOfDeath = table.Column<DateOnly>(type: "date", nullable: true),
                     Gender = table.Column<int>(type: "int", nullable: false),
-                    IsPublic = table.Column<int>(type: "int", nullable: true)
+                    ForSale = table.Column<int>(type: "int", nullable: true),
+                    FatherId_Placeholder = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Father_EarCombId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    MotherId_Placeholder = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Mother_EarCombId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Rabbits", x => new { x.RightEarId, x.LeftEarId });
+                    table.PrimaryKey("PK_Rabbits", x => x.EarCombId);
                     table.ForeignKey(
                         name: "FK_Rabbits_AspNetUsers_OwnerId",
                         column: x => x.OwnerId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Rabbits_Rabbits_Father_EarCombId",
+                        column: x => x.Father_EarCombId,
+                        principalTable: "Rabbits",
+                        principalColumn: "EarCombId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Rabbits_Rabbits_Mother_EarCombId",
+                        column: x => x.Mother_EarCombId,
+                        principalTable: "Rabbits",
+                        principalColumn: "EarCombId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -199,53 +215,16 @@ namespace DB_AngoraREST.Migrations
                     ContentType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     EntityId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     EntityType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RabbitLeftEarId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    RabbitRightEarId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    RabbitEarCombId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Photos", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Photos_Rabbits_RabbitRightEarId_RabbitLeftEarId",
-                        columns: x => new { x.RabbitRightEarId, x.RabbitLeftEarId },
+                        name: "FK_Photos_Rabbits_RabbitEarCombId",
+                        column: x => x.RabbitEarCombId,
                         principalTable: "Rabbits",
-                        principalColumns: new[] { "RightEarId", "LeftEarId" });
-                });
-
-            migrationBuilder.CreateTable(
-                name: "RabbitParents",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    MotherRightEarId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    MotherLeftEarId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FatherRightEarId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FatherLeftEarId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ChildRightEarId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ChildLeftEarId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RabbitChildRightEarId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RabbitChildLeftEarId = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RabbitParents", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_RabbitParents_Rabbits_FatherRightEarId_FatherLeftEarId",
-                        columns: x => new { x.FatherRightEarId, x.FatherLeftEarId },
-                        principalTable: "Rabbits",
-                        principalColumns: new[] { "RightEarId", "LeftEarId" });
-                    table.ForeignKey(
-                        name: "FK_RabbitParents_Rabbits_MotherRightEarId_MotherLeftEarId",
-                        columns: x => new { x.MotherRightEarId, x.MotherLeftEarId },
-                        principalTable: "Rabbits",
-                        principalColumns: new[] { "RightEarId", "LeftEarId" });
-                    table.ForeignKey(
-                        name: "FK_RabbitParents_Rabbits_RabbitChildRightEarId_RabbitChildLeftEarId",
-                        columns: x => new { x.RabbitChildRightEarId, x.RabbitChildLeftEarId },
-                        principalTable: "Rabbits",
-                        principalColumns: new[] { "RightEarId", "LeftEarId" },
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "EarCombId");
                 });
 
             migrationBuilder.CreateTable(
@@ -254,8 +233,9 @@ namespace DB_AngoraREST.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RightEarId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LeftEarId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RightEarId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LeftEarId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RabbitEarCombId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     DateRated = table.Column<DateOnly>(type: "date", nullable: false),
                     WeightPoint = table.Column<int>(type: "int", nullable: false),
                     WeightNotice = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -269,10 +249,10 @@ namespace DB_AngoraREST.Migrations
                 {
                     table.PrimaryKey("PK_Ratings", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Ratings_Rabbits_RightEarId_LeftEarId",
-                        columns: x => new { x.RightEarId, x.LeftEarId },
+                        name: "FK_Ratings_Rabbits_RabbitEarCombId",
+                        column: x => x.RabbitEarCombId,
                         principalTable: "Rabbits",
-                        principalColumns: new[] { "RightEarId", "LeftEarId" },
+                        principalColumn: "EarCombId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -309,6 +289,13 @@ namespace DB_AngoraREST.Migrations
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_BreederRegNo",
+                table: "AspNetUsers",
+                column: "BreederRegNo",
+                unique: true,
+                filter: "[BreederRegNo] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
@@ -316,24 +303,19 @@ namespace DB_AngoraREST.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Photos_RabbitRightEarId_RabbitLeftEarId",
+                name: "IX_Photos_RabbitEarCombId",
                 table: "Photos",
-                columns: new[] { "RabbitRightEarId", "RabbitLeftEarId" });
+                column: "RabbitEarCombId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RabbitParents_FatherRightEarId_FatherLeftEarId",
-                table: "RabbitParents",
-                columns: new[] { "FatherRightEarId", "FatherLeftEarId" });
+                name: "IX_Rabbits_Father_EarCombId",
+                table: "Rabbits",
+                column: "Father_EarCombId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RabbitParents_MotherRightEarId_MotherLeftEarId",
-                table: "RabbitParents",
-                columns: new[] { "MotherRightEarId", "MotherLeftEarId" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RabbitParents_RabbitChildRightEarId_RabbitChildLeftEarId",
-                table: "RabbitParents",
-                columns: new[] { "RabbitChildRightEarId", "RabbitChildLeftEarId" });
+                name: "IX_Rabbits_Mother_EarCombId",
+                table: "Rabbits",
+                column: "Mother_EarCombId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Rabbits_OwnerId",
@@ -341,9 +323,9 @@ namespace DB_AngoraREST.Migrations
                 column: "OwnerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Ratings_RightEarId_LeftEarId",
+                name: "IX_Ratings_RabbitEarCombId",
                 table: "Ratings",
-                columns: new[] { "RightEarId", "LeftEarId" });
+                column: "RabbitEarCombId");
         }
 
         /// <inheritdoc />
@@ -366,9 +348,6 @@ namespace DB_AngoraREST.Migrations
 
             migrationBuilder.DropTable(
                 name: "Photos");
-
-            migrationBuilder.DropTable(
-                name: "RabbitParents");
 
             migrationBuilder.DropTable(
                 name: "Ratings");

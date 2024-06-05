@@ -1,7 +1,7 @@
 ﻿using DB_AngoraLib.DTOs;
 using DB_AngoraLib.Models;
+using DB_AngoraLib.Services.AccountService;
 using DB_AngoraLib.Services.RabbitService;
-using DB_AngoraLib.Services.UserService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,9 +14,9 @@ namespace DB_AngoraREST.Controllers
     public class RabbitController : ControllerBase
     {
         private readonly IRabbitService _rabbitService;
-        private readonly IUserService _userService;
+        private readonly IAccountService _userService;
 
-        public RabbitController(IRabbitService rabbitService, IUserService userService)
+        public RabbitController(IRabbitService rabbitService, IAccountService userService)
         {
             _rabbitService = rabbitService;
             _userService = userService;
@@ -40,7 +40,7 @@ namespace DB_AngoraREST.Controllers
                 var createdRabbit = await _rabbitService.AddRabbit_ToMyCollectionAsync(userId, newRabbitDto);
 
                 // Use CreatedAtAction with GetRabbit_ProfileByEarTags
-                return CreatedAtAction(nameof(GetRabbit_ProfileByEarTags), new { rightEarId = createdRabbit.RightEarId, leftEarId = createdRabbit.LeftEarId }, createdRabbit);
+                return CreatedAtAction(nameof(GetRabbit_ProfileByEarTags), new { earCombId = createdRabbit.EarCombId }, createdRabbit);
             }
             catch (InvalidOperationException ex)    // ved at have catch på vil RabbitService fejl beskeden kunne sendes tilbage til klienten
             {
@@ -48,6 +48,7 @@ namespace DB_AngoraREST.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
 
 
         //-------------------------------: GET
@@ -68,13 +69,13 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpGet("Profile/{rightEarId}-{leftEarId}")]
+        [HttpGet("Profile/{earCombId}")]
         [Authorize(Roles = "Admin, Moderator, Breeder")]
-        public async Task<ActionResult<Rabbit_ProfileDTO>> GetRabbit_ProfileByEarTags(string rightEarId, string leftEarId)
+        public async Task<ActionResult<Rabbit_ProfileDTO>> GetRabbit_ProfileByEarTags(string earCombId)
         {
             var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userClaims = User.Claims.ToList();
-            var rabbitProfile = await _rabbitService.GetRabbit_ProfileAsync(currentUserId, rightEarId, leftEarId, userClaims);
+            var rabbitProfile = await _rabbitService.GetRabbit_ProfileAsync(currentUserId, earCombId, userClaims);
 
             if (rabbitProfile == null)
             {
@@ -83,6 +84,7 @@ namespace DB_AngoraREST.Controllers
 
             return Ok(rabbitProfile);
         }
+
 
 
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -147,7 +149,7 @@ namespace DB_AngoraREST.Controllers
 
             try
             {
-                var filteredRabbits = await _rabbitService.GetAllRabbits_OpenProfile_Filtered(filter);
+                var filteredRabbits = await _rabbitService.GetAllRabbits_Forsale_Filtered(filter);
                 return Ok(filteredRabbits);
             }
             catch (InvalidOperationException ex)
@@ -158,23 +160,21 @@ namespace DB_AngoraREST.Controllers
 
 
 
-
-
         //-------------------------------: PUT
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [Authorize(Policy = "UpdateRabbit")]
-        [HttpPut("Update/{rightEarId}-{leftEarId}")]
-        public async Task<ActionResult<Rabbit_ProfileDTO>> UpdateRabbit(string rightEarId, string leftEarId, [FromBody] Rabbit_UpdateDTO updatedRabbit)
+        [HttpPut("Update/{earCombId}")]
+        public async Task<ActionResult<Rabbit_ProfileDTO>> UpdateRabbit(string earCombId, [FromBody] Rabbit_UpdateDTO updatedRabbit)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userClaims = User.Claims.ToList();
 
             try
             {
-                var updatedRabbitDTO = await _rabbitService.UpdateRabbit_RBAC_Async(userId, rightEarId, leftEarId, updatedRabbit, userClaims);
+                var updatedRabbitDTO = await _rabbitService.UpdateRabbit_RBAC_Async(userId, earCombId, updatedRabbit, userClaims);
                 if (updatedRabbitDTO == null)
                 {
                     return NotFound();
@@ -194,15 +194,15 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [Authorize(Policy = "DeleteRabbit")]
-        [HttpDelete("Delete/{rightEarId}-{leftEarId}")]
-        public async Task<ActionResult<Rabbit_PreviewDTO>> DeleteRabbit(string rightEarId, string leftEarId)
+        [HttpDelete("Delete/{earCombId}")]
+        public async Task<ActionResult<Rabbit_PreviewDTO>> DeleteRabbit(string earCombId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userClaims = User.Claims.ToList();
 
             try
             {
-                var rabbitPreviewDTO = await _rabbitService.DeleteRabbit_RBAC_Async(userId, rightEarId, leftEarId, userClaims);
+                var rabbitPreviewDTO = await _rabbitService.DeleteRabbit_RBAC_Async(userId, earCombId, userClaims);
                 return Ok(rabbitPreviewDTO);
             }
             catch (InvalidOperationException ex)
@@ -210,6 +210,7 @@ namespace DB_AngoraREST.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
 
 
     }

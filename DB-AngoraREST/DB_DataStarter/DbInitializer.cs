@@ -84,14 +84,37 @@ namespace DB_AngoraREST.DB_DataStarter
             }
 
             var mockRabbits = MockRabbits.GetMockRabbits();
+
+            // Indlæs alle kaninerne med Father_EarCombId og Mother_EarCombId sat til null
             foreach (var rabbit in mockRabbits)
             {
                 // Set the User property of the Rabbit object to the corresponding User
                 rabbit.User = context.Users.FirstOrDefault(u => u.Id == rabbit.OwnerId);
+
+                // Flyt Father_EarCombId og Mother_EarCombId til placeholder properties og sæt dem til null
+                rabbit.FatherId_Placeholder = rabbit.Father_EarCombId;
+                rabbit.MotherId_Placeholder = rabbit.Mother_EarCombId;
+                rabbit.Father_EarCombId = null;
+                rabbit.Mother_EarCombId = null;
+
                 context.Rabbits.Add(rabbit);
             }
 
             context.SaveChanges();
+
+            // Opdater Father_EarCombId og Mother_EarCombId for hver kanin
+            foreach (var rabbit in mockRabbits)
+            {
+                var dbRabbit = context.Rabbits.FirstOrDefault(r => r.EarCombId == rabbit.EarCombId);
+                if (dbRabbit != null)
+                {
+                    dbRabbit.Father_EarCombId = context.Rabbits.FirstOrDefault(r => r.EarCombId == rabbit.FatherId_Placeholder)?.EarCombId;
+                    dbRabbit.Mother_EarCombId = context.Rabbits.FirstOrDefault(r => r.EarCombId == rabbit.MotherId_Placeholder)?.EarCombId;
+                }
+            }
+
+            context.SaveChanges();
+
         }
     }
 }

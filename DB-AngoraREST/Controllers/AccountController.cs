@@ -4,7 +4,6 @@ using DB_AngoraLib.Services.AccountService;
 using DB_AngoraLib.Services.RabbitService;
 using DB_AngoraLib.Services.SigninService;
 //using DB_AngoraLib.Services.TokenService;
-using DB_AngoraLib.Services.UserService;
 using DB_AngoraREST.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -26,17 +25,15 @@ namespace DB_AngoraREST.Controllers
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly ISigninService _signinService;
-        private readonly IUserService _userService;
         private readonly IAccountService _accountService;
         private readonly IRabbitService _rabbitService;
         //private readonly TokenService _tokenService;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, ISigninService signinService, IUserService userService, IAccountService accountService, IRabbitService rabbitService/*, TokenService tokenService*/)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, ISigninService signinService, IAccountService accountService, IRabbitService rabbitService/*, TokenService tokenService*/)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _signinService = signinService;
-            _userService = userService;
             _accountService = accountService;
             _rabbitService = rabbitService;
             //_tokenService = tokenService;
@@ -104,7 +101,7 @@ namespace DB_AngoraREST.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Console.WriteLine($"Getting rabbits for user with ID: {userId}");
 
-            var rabbits = await _userService.GetMyRabbitCollection(userId);
+            var rabbits = await _accountService.GetMyRabbitCollection(userId);
 
             Console.WriteLine($"Got {rabbits.Count} rabbits for user with ID: {userId}");
 
@@ -149,7 +146,7 @@ namespace DB_AngoraREST.Controllers
                 genderEnum = parsedGender;
             }
 
-            var rabbits = await _userService.GetMyRabbitCollection_Filtered(userId, rightEarId, leftEarId, nickName, raceEnum, colorEnum, genderEnum);
+            var rabbits = await _accountService.GetMyRabbitCollection_Filtered(userId, rightEarId, leftEarId, nickName, raceEnum, colorEnum, genderEnum);
             return Ok(rabbits);
         }
 

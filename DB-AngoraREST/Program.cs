@@ -6,7 +6,6 @@ using DB_AngoraLib.Services.EmailService;
 using DB_AngoraLib.Services.RabbitService;
 using DB_AngoraLib.Services.RoleService;
 using DB_AngoraLib.Services.SigninService;
-using DB_AngoraLib.Services.UserService;
 using DB_AngoraLib.Services.ValidationService;
 using DB_AngoraREST.DB_DataStarter;
 using DB_AngoraREST.Services;
@@ -27,7 +26,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IGRepository<Rabbit>, GRepository<Rabbit>>();
 builder.Services.AddScoped<IRabbitService, RabbitServices>();
 builder.Services.AddScoped<IGRepository<User>, GRepository<User>>();
-builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailServices>();
 builder.Services.AddScoped<RabbitValidator>();
 // Mine Lib IdentityUser services
