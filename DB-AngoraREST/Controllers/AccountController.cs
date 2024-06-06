@@ -39,6 +39,8 @@ namespace DB_AngoraREST.Controllers
             //_tokenService = tokenService;
         }
 
+
+        //--------------------: ADD/POST :--------------------
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("Register_BasicUser")]
@@ -65,7 +67,7 @@ namespace DB_AngoraREST.Controllers
         }
 
 
-
+        //--------------------: LOGIN :--------------------
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("Login")]
@@ -89,8 +91,9 @@ namespace DB_AngoraREST.Controllers
             }
             return Unauthorized();
         }
-        
 
+        //--------------------: GET :--------------------
+        //-------: User collections
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)] // Unauthorized, hvis brugeren har en ugyldig token (ikke logget ind eller tokenfejl)
         [ProducesResponseType(StatusCodes.Status403Forbidden)]    // Forbidden, hvis brugeren ikke har adgang til ressourcen
@@ -150,5 +153,49 @@ namespace DB_AngoraREST.Controllers
             return Ok(rabbits);
         }
 
+        //-------: User(s)
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
+        //[Authorize(Roles = "Admin, Moderator")]
+        //[HttpGet("All")]
+        //public async Task<IActionResult> GetAllUsers()
+        //{
+        //    var users = await _accountService.GetAllUsersAsync();
+        //    return Ok(users);
+        //}
+
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Roles = "Admin, Moderator")]
+        [HttpGet("ByBreederRegNo/{breederRegNo}")]
+        public async Task<IActionResult> GetUserByBreederRegNo(string breederRegNo)
+        {
+            var user = await _accountService.GetUserByBreederRegNoAsync(breederRegNo);
+            if (user != null)
+            {
+                return Ok(user);
+            }
+            return NotFound();
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Roles = "Admin, Moderator")]
+        [HttpGet("GetUserByUserNameOrEmail/{userNameOrEmail}")]
+        public async Task<IActionResult> GetUserByUserNameOrEmail(string userNameOrEmail)
+        {
+            var user = await _accountService.GetUserByUserNameOrEmailAsync(userNameOrEmail);
+            if (user != null)
+            {
+                return Ok(user);
+            }
+            return NotFound();
+        }
     }
 }
