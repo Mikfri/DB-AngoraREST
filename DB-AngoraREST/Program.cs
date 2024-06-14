@@ -36,14 +36,14 @@ builder.Services.AddScoped<IRoleService, RoleServices>();
 //builder.Services.AddScoped<TokenService>();
 
 
-builder.Services.AddDistributedMemoryCache(); // Adds a default in-memory implementation of IDistributedCache
+//builder.Services.AddDistributedMemoryCache(); // Adds a default in-memory implementation of IDistributedCache
 
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
+//builder.Services.AddSession(options =>
+//{
+//    options.IdleTimeout = TimeSpan.FromMinutes(30);
+//    options.Cookie.HttpOnly = true;
+//    options.Cookie.IsEssential = true;
+//});
 
 
 builder.Services.AddControllers();
@@ -134,6 +134,8 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    //options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; // Sørger for at refence-loop kan håndteres, som er tilfældet for Rabbit_PedigreeDTO
+
 });
 
 
@@ -163,7 +165,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();    // IdentityUser setup
-app.UseSession();           // IdentityUser setup
+//app.UseSession();           // IdentityUser setup
 app.UseAuthorization();
 
 app.MapControllers();

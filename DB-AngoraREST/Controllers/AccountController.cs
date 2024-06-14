@@ -73,24 +73,15 @@ namespace DB_AngoraREST.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login(Login_RequestDTO loginDTO)
         {
-            var loginRequest = new Login_RequestDTO
-            {
-                UserName = loginDTO.UserName,
-                Password = loginDTO.Password,
-                RememberMe = false
-            };
-
-            var result = await _signinService.LoginAsync(loginRequest);
+            var result = await _signinService.LoginAsync(loginDTO);
             if (!string.IsNullOrEmpty(result.Token))
             {
-                return Ok(new
-                {
-                    token = result.Token,
-                    expiration = result.ExpiryDate
-                });
+                return Ok(result);
             }
-            return Unauthorized();
+            return Unauthorized(new { error = "Invalid login attempt" });
         }
+
+
 
         //--------------------: GET :--------------------
         //-------: User collections
