@@ -2,13 +2,13 @@ using DB_AngoraLib.EF_DbContext;
 using DB_AngoraLib.Models;
 using DB_AngoraLib.Repository;
 using DB_AngoraLib.Services.AccountService;
+using DB_AngoraLib.Services.ApplicationServices;
 using DB_AngoraLib.Services.EmailService;
 using DB_AngoraLib.Services.RabbitService;
 using DB_AngoraLib.Services.RoleService;
 using DB_AngoraLib.Services.SigninService;
 using DB_AngoraLib.Services.ValidationService;
 using DB_AngoraREST.DB_DataStarter;
-using DB_AngoraREST.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -26,19 +26,28 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IGRepository<Rabbit>, GRepository<Rabbit>>();
 builder.Services.AddScoped<IRabbitService, RabbitServices>();
 builder.Services.AddScoped<IGRepository<User>, GRepository<User>>();
-builder.Services.AddScoped<IEmailService, EmailServices>();
+
+builder.Services.AddScoped<IGRepository<BreederApplication>, GRepository<BreederApplication>>();
+builder.Services.AddScoped<IApplicationService, ApplicationServices>();
+
+builder.Services.AddTransient<IEmailService, EmailServices>();
 builder.Services.AddScoped<RabbitValidator>();
+
 // Mine Lib IdentityUser services
-builder.Services.AddScoped<ISigninService, SigninServices>();
 builder.Services.AddScoped<IAccountService, AccountServices>();
+builder.Services.AddScoped<ISigninService, SigninServices>();
 builder.Services.AddScoped<IRoleService, RoleServices>();
-//----------------: DB-AngoraREST Services
-//builder.Services.AddScoped<TokenService>();
+
+// Bind EmailSettings fra appsettings.json
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+
+// Registrer EmailService med dependency injection
+//builder.Services.AddTransient<IEmailService, EmailService>();
 
 
-//builder.Services.AddDistributedMemoryCache(); // Adds a default in-memory implementation of IDistributedCache
+builder.Services.AddDistributedMemoryCache(); // Adds a default in-memory implementation of IDistributedCache
 
-//builder.Services.AddSession(options =>
+//builder.Services.AddSession(options =>          
 //{
 //    options.IdleTimeout = TimeSpan.FromMinutes(30);
 //    options.Cookie.HttpOnly = true;
@@ -57,6 +66,7 @@ builder.Services.AddDbContext<DB_AngoraContext>(options =>
 //------------------: IDENTITY
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<DB_AngoraContext>()
+    .AddDefaultTokenProviders()
     .AddSignInManager()
     .AddRoles<IdentityRole>();
 
@@ -89,13 +99,13 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy("UpdateRabbit", policy =>
     policy.RequireAssertion(context =>
-        context.User.HasClaim("RolePermission", "Update_Own_Rabbit") ||
-        context.User.HasClaim("RolePermission", "Update_Any_Rabbit")));
+        context.User.HasClaim("Rabbit:Update", "Own") ||
+        context.User.HasClaim("Rabbit:Update", "Any")));
 
     options.AddPolicy("DeleteRabbit", policy =>
     policy.RequireAssertion(context =>
-        context.User.HasClaim("RolePermission", "Delete_Own_Rabbit") ||
-        context.User.HasClaim("RolePermission", "Delete_Any_Rabbit")));
+        context.User.HasClaim("Rabbit:Delete", "Own") ||
+        context.User.HasClaim("Rabbit:Delete", "Any")));
 });
 
 //--------------------: SWAGGER
@@ -109,7 +119,8 @@ builder.Services.AddSwaggerGen(options =>
     {
         In = ParameterLocation.Header,
         Name = "Authorization",
-        Type = SecuritySchemeType.Http,
+        Type = SecuritySchemeType.Http, // .ApiKey,
+        //Type = SecuritySchemeType.OAuth2,
         Scheme = "Bearer"
     });
     options.OperationFilter<SecurityRequirementsOperationFilter>(true, "oath2");
@@ -165,7 +176,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();    // IdentityUser setup
-//app.UseSession();           // IdentityUser setup
+//app.UseSession();           // IdentityUser setup // Skal ikke bruges, da vi bruger JWT
 app.UseAuthorization();
 
 app.MapControllers();

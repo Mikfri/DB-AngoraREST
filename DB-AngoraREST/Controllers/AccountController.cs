@@ -3,8 +3,6 @@ using DB_AngoraLib.Models;
 using DB_AngoraLib.Services.AccountService;
 using DB_AngoraLib.Services.RabbitService;
 using DB_AngoraLib.Services.SigninService;
-//using DB_AngoraLib.Services.TokenService;
-using DB_AngoraREST.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -22,21 +20,19 @@ namespace DB_AngoraREST.Controllers
     public class AccountController : Controller
     {
 
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
+        //private readonly UserManager<User> _userManager;
+        //private readonly SignInManager<User> _signInManager;
         private readonly ISigninService _signinService;
         private readonly IAccountService _accountService;
         private readonly IRabbitService _rabbitService;
-        //private readonly TokenService _tokenService;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, ISigninService signinService, IAccountService accountService, IRabbitService rabbitService/*, TokenService tokenService*/)
+        public AccountController(/*UserManager<User> userManager, SignInManager<User> signInManager, */ISigninService signinService, IAccountService accountService, IRabbitService rabbitService)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
+            //_userManager = userManager;
+            //_signInManager = signInManager;
             _signinService = signinService;
             _accountService = accountService;
             _rabbitService = rabbitService;
-            //_tokenService = tokenService;
         }
 
 
@@ -68,7 +64,7 @@ namespace DB_AngoraREST.Controllers
 
 
         //--------------------: LOGIN :--------------------
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]             // TODO: Find ud af hvor vi pakker token ind i HttpOnly og Secure cookie
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("Login")]
         public async Task<IActionResult> Login(Login_RequestDTO loginDTO)
@@ -96,6 +92,23 @@ namespace DB_AngoraREST.Controllers
             Console.WriteLine($"Getting rabbits for user with ID: {userId}");
 
             var rabbits = await _accountService.GetMyRabbitCollection(userId);
+
+            Console.WriteLine($"Got {rabbits.Count} rabbits for user with ID: {userId}");
+
+            return Ok(rabbits);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)] // Unauthorized, hvis brugeren har en ugyldig token (ikke logget ind eller tokenfejl)
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]    // Forbidden, hvis brugeren ikke har adgang til ressourcen
+        [HttpGet("FromMyFoldCollection")]
+        [Authorize(Roles = "Admin, Breeder, Moderator")]
+        public async Task<IActionResult> GetRabbitsFromMyFold()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine($"Getting rabbits for user with ID: {userId}");
+
+            var rabbits = await _accountService.GetMyRabbitLinkedCollection(userId);
 
             Console.WriteLine($"Got {rabbits.Count} rabbits for user with ID: {userId}");
 
