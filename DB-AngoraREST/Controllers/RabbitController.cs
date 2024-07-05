@@ -14,12 +14,10 @@ namespace DB_AngoraREST.Controllers
     public class RabbitController : ControllerBase
     {
         private readonly IRabbitService _rabbitService;
-        private readonly IAccountService _userService;
 
-        public RabbitController(IRabbitService rabbitService, IAccountService userService)
+        public RabbitController(IRabbitService rabbitService)
         {
             _rabbitService = rabbitService;
-            _userService = userService;
         }
 
         //-------------------------------: POST
@@ -37,7 +35,7 @@ namespace DB_AngoraREST.Controllers
             try
             {
                 // Pass the userId and newRabbitDto to your service method
-                var createdRabbit = await _rabbitService.AddRabbit_ToMyCollectionAsync(userId, newRabbitDto);
+                var createdRabbit = await _rabbitService.AddRabbit_ToMyCollection(userId, newRabbitDto);
 
                 // Use CreatedAtAction with GetRabbit_ProfileByEarTags
                 return CreatedAtAction(nameof(GetRabbit_ProfileByEarTags), new { earCombId = createdRabbit.EarCombId }, createdRabbit);
@@ -61,7 +59,7 @@ namespace DB_AngoraREST.Controllers
         [HttpGet("All")]
         public async Task<ActionResult<IEnumerable<Rabbit>>> GetAllRabbits()
         {
-            var rabbits = await _rabbitService.GetAllRabbitsAsync();
+            var rabbits = await _rabbitService.Get_AllRabbits();
             return Ok(rabbits);
         }
 
@@ -75,7 +73,7 @@ namespace DB_AngoraREST.Controllers
         {
             var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userClaims = User.Claims.ToList();
-            var rabbitProfile = await _rabbitService.GetRabbit_ProfileAsync(currentUserId, earCombId, userClaims);
+            var rabbitProfile = await _rabbitService.Get_Rabbit_Profile(currentUserId, earCombId, userClaims);
 
             if (rabbitProfile == null)
             {
@@ -84,6 +82,59 @@ namespace DB_AngoraREST.Controllers
 
             return Ok(rabbitProfile);
         }
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpGet("Pedigree/{earCombId}")]
+        [Authorize(Roles = "Admin, Moderator, Breeder")] // Juster adgangskontrollen efter behov
+        public async Task<ActionResult<Rabbit_PedigreeDTO>> GetRabbitPedigree(string earCombId)
+        {
+            try
+            {
+                var rabbitPedigree = await _rabbitService.Get_RabbitPedigree(earCombId);
+
+                if (rabbitPedigree == null)
+                {
+                    return NotFound(new { message = $"Pedigree for rabbit with EarCombId '{earCombId}' not found." });
+                }
+
+                return Ok(rabbitPedigree);
+            }
+            catch (Exception ex) // Overvej at fange mere specifikke undtagelser, hvis det er muligt
+            {
+                // Log fejlen her, hvis nødvendigt
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+            }
+        }
+
+
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status404NotFound)]
+        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
+        //[HttpGet("Pedigree/{earCombId}")]
+        //[Authorize(Roles = "Admin, Moderator, Breeder")] // Juster adgangskontrollen efter behov
+        //public async Task<ActionResult<Rabbit_PedigreeDTO>> GetRabbitPedigree(string earCombId, [FromQuery] int maxGeneration = 3) // Standardværdi for maxGeneration kan justeres
+        //{
+        //    try
+        //    {
+        //        var rabbitPedigree = await _rabbitService.Get_RabbitPedigree(earCombId/*, maxGeneration*/);
+
+        //        if (rabbitPedigree == null)
+        //        {
+        //            return NotFound(new { message = $"Pedigree for rabbit with EarCombId '{earCombId}' not found." });
+        //        }
+
+        //        return Ok(rabbitPedigree);
+        //    }
+        //    catch (Exception ex) // Overvej at fange mere specifikke undtagelser, hvis det er muligt
+        //    {
+        //        // Log fejlen her, hvis nødvendigt
+        //        return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+        //    }
+        //}
 
 
 
@@ -95,7 +146,7 @@ namespace DB_AngoraREST.Controllers
         [Authorize(Roles = "Admin, Moderator")]
         public async Task<ActionResult<IEnumerable<Rabbit>>> GetRabbitsByBreeder(string breederRegNo)
         {
-            var rabbits = await _rabbitService.GetAllRabbits_ByBreederRegAsync(breederRegNo);
+            var rabbits = await _rabbitService.Get_AllRabbits_ByBreederReg(breederRegNo);
             if (rabbits == null || !rabbits.Any())
             {
                 return NotFound();
@@ -149,7 +200,7 @@ namespace DB_AngoraREST.Controllers
 
             try
             {
-                var filteredRabbits = await _rabbitService.GetAllRabbits_Forsale_Filtered(filter);
+                var filteredRabbits = await _rabbitService.Get_AllRabbits_Forsale_Filtered(filter);
                 return Ok(filteredRabbits);
             }
             catch (InvalidOperationException ex)
@@ -174,7 +225,7 @@ namespace DB_AngoraREST.Controllers
 
             try
             {
-                var updatedRabbitDTO = await _rabbitService.UpdateRabbit_RBAC_Async(userId, earCombId, updatedRabbit, userClaims);
+                var updatedRabbitDTO = await _rabbitService.UpdateRabbit_RBAC(userId, earCombId, updatedRabbit, userClaims);
                 if (updatedRabbitDTO == null)
                 {
                     return NotFound();
@@ -202,7 +253,7 @@ namespace DB_AngoraREST.Controllers
 
             try
             {
-                var rabbitPreviewDTO = await _rabbitService.DeleteRabbit_RBAC_Async(userId, earCombId, userClaims);
+                var rabbitPreviewDTO = await _rabbitService.DeleteRabbit_RBAC(userId, earCombId, userClaims);
                 return Ok(rabbitPreviewDTO);
             }
             catch (InvalidOperationException ex)

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DB_AngoraREST.Migrations
 {
     [DbContext(typeof(DB_AngoraContext))]
-    [Migration("20240626083811_DbAngoraMig03")]
-    partial class DbAngoraMig03
+    [Migration("20240705172648_DbAngoraMig01")]
+    partial class DbAngoraMig01
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -209,6 +209,46 @@ namespace DB_AngoraREST.Migrations
                     b.HasIndex("RabbitRatedEarCombId");
 
                     b.ToTable("Ratings");
+                });
+
+            modelBuilder.Entity("DB_AngoraLib.Models.TransferRequst", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("DateAccepted")
+                        .HasColumnType("date");
+
+                    b.Property<string>("IssuerId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("Price")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RabbitId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RecipentId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SaleConditions")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IssuerId");
+
+                    b.HasIndex("RabbitId");
+
+                    b.HasIndex("RecipentId");
+
+                    b.ToTable("RabbitTransfers");
                 });
 
             modelBuilder.Entity("DB_AngoraLib.Models.User", b =>
@@ -493,6 +533,30 @@ namespace DB_AngoraREST.Migrations
                     b.Navigation("RabbitRated");
                 });
 
+            modelBuilder.Entity("DB_AngoraLib.Models.TransferRequst", b =>
+                {
+                    b.HasOne("DB_AngoraLib.Models.User", "UserIssuer")
+                        .WithMany("RabbitTransfers_Issued")
+                        .HasForeignKey("IssuerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DB_AngoraLib.Models.Rabbit", "Rabbit")
+                        .WithMany()
+                        .HasForeignKey("RabbitId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DB_AngoraLib.Models.User", "UserRecipent")
+                        .WithMany("RabbitTransfers_Received")
+                        .HasForeignKey("RecipentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Rabbit");
+
+                    b.Navigation("UserIssuer");
+
+                    b.Navigation("UserRecipent");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -556,6 +620,10 @@ namespace DB_AngoraREST.Migrations
             modelBuilder.Entity("DB_AngoraLib.Models.User", b =>
                 {
                     b.Navigation("BreederApplications");
+
+                    b.Navigation("RabbitTransfers_Issued");
+
+                    b.Navigation("RabbitTransfers_Received");
 
                     b.Navigation("RabbitsLinked");
 

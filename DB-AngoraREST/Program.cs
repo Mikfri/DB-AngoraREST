@@ -7,6 +7,7 @@ using DB_AngoraLib.Services.EmailService;
 using DB_AngoraLib.Services.RabbitService;
 using DB_AngoraLib.Services.RoleService;
 using DB_AngoraLib.Services.SigninService;
+using DB_AngoraLib.Services.TransferService;
 using DB_AngoraLib.Services.ValidationService;
 using DB_AngoraREST.DB_DataStarter;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -29,6 +30,13 @@ builder.Services.AddScoped<IGRepository<User>, GRepository<User>>();
 
 builder.Services.AddScoped<IGRepository<BreederApplication>, GRepository<BreederApplication>>();
 builder.Services.AddScoped<IApplicationService, ApplicationServices>();
+
+builder.Services.AddScoped<IGRepository<TransferRequst>, GRepository<TransferRequst>>();
+builder.Services.AddScoped<ITransferService, TransferServices>();
+
+builder.Services.AddScoped<IGRepository<Notification>, GRepository<Notification>>();
+builder.Services.AddScoped<NotificationService>();
+
 
 builder.Services.AddTransient<IEmailService, EmailServices>();
 builder.Services.AddScoped<RabbitValidator>();
@@ -115,6 +123,11 @@ builder.Services.AddEndpointsApiExplorer(); // Swagger API-dokumentation (///<su
 //--------: Authentication UI
 builder.Services.AddSwaggerGen(options =>
 {
+    //options.MapType<DateOnly>(() => new OpenApiSchema
+    //{
+    //    Type = "string",
+    //    Format = "date" // Dette angiver, at DateOnly skal vises som en dato-vælger i UI'et
+    //});
     options.AddSecurityDefinition("oath2", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -124,6 +137,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer"
     });
     options.OperationFilter<SecurityRequirementsOperationFilter>(true, "oath2");
+
 });
 
 //--------------------: OAUTH2 eksempel.. måske der findes noget lettere.. // TODO: Implement this
@@ -145,7 +159,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    //options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; // Sørger for at refence-loop kan håndteres, som er tilfældet for Rabbit_PedigreeDTO
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; // Sørger for at refence-loop kan håndteres, som er tilfældet for Rabbit_PedigreeDTO
 
 });
 
