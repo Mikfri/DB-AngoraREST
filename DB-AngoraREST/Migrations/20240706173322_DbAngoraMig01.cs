@@ -57,6 +57,22 @@ namespace DB_AngoraREST.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -168,19 +184,19 @@ namespace DB_AngoraREST.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    DateApplied = table.Column<DateOnly>(type: "date", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    DateSubmitted = table.Column<DateOnly>(type: "date", nullable: false),
+                    UserApplicantId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     RequestedBreederRegNo = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DocumentationPath = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
                     RejectionReason = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_BreederApplications", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BreederApplications_AspNetUsers_UserId",
-                        column: x => x.UserId,
+                        name: "FK_BreederApplications_AspNetUsers_UserApplicantId",
+                        column: x => x.UserApplicantId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -258,43 +274,6 @@ namespace DB_AngoraREST.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RabbitTransfers",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RabbitId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    IssuerId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    RecipentId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    Price = table.Column<int>(type: "int", nullable: true),
-                    SaleConditions = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    DateAccepted = table.Column<DateOnly>(type: "date", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RabbitTransfers", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_RabbitTransfers_AspNetUsers_IssuerId",
-                        column: x => x.IssuerId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_RabbitTransfers_AspNetUsers_RecipentId",
-                        column: x => x.RecipentId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_RabbitTransfers_Rabbits_RabbitId",
-                        column: x => x.RabbitId,
-                        principalTable: "Rabbits",
-                        principalColumn: "EarCombId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Ratings",
                 columns: table => new
                 {
@@ -320,6 +299,43 @@ namespace DB_AngoraREST.Migrations
                         principalTable: "Rabbits",
                         principalColumn: "EarCombId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TransferRequests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RabbitId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    IssuerId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    RecipentId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    Price = table.Column<int>(type: "int", nullable: true),
+                    SaleConditions = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    DateAccepted = table.Column<DateOnly>(type: "date", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TransferRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TransferRequests_AspNetUsers_IssuerId",
+                        column: x => x.IssuerId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_TransferRequests_AspNetUsers_RecipentId",
+                        column: x => x.RecipentId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_TransferRequests_Rabbits_RabbitId",
+                        column: x => x.RabbitId,
+                        principalTable: "Rabbits",
+                        principalColumn: "EarCombId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -369,9 +385,9 @@ namespace DB_AngoraREST.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BreederApplications_UserId",
+                name: "IX_BreederApplications_UserApplicantId",
                 table: "BreederApplications",
-                column: "UserId");
+                column: "UserApplicantId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Photos_RabbitEarCombId",
@@ -399,24 +415,24 @@ namespace DB_AngoraREST.Migrations
                 column: "OwnerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RabbitTransfers_IssuerId",
-                table: "RabbitTransfers",
-                column: "IssuerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RabbitTransfers_RabbitId",
-                table: "RabbitTransfers",
-                column: "RabbitId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RabbitTransfers_RecipentId",
-                table: "RabbitTransfers",
-                column: "RecipentId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Ratings_RabbitRatedEarCombId",
                 table: "Ratings",
                 column: "RabbitRatedEarCombId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TransferRequests_IssuerId",
+                table: "TransferRequests",
+                column: "IssuerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TransferRequests_RabbitId",
+                table: "TransferRequests",
+                column: "RabbitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TransferRequests_RecipentId",
+                table: "TransferRequests",
+                column: "RecipentId");
         }
 
         /// <inheritdoc />
@@ -441,13 +457,16 @@ namespace DB_AngoraREST.Migrations
                 name: "BreederApplications");
 
             migrationBuilder.DropTable(
+                name: "Notifications");
+
+            migrationBuilder.DropTable(
                 name: "Photos");
 
             migrationBuilder.DropTable(
-                name: "RabbitTransfers");
+                name: "Ratings");
 
             migrationBuilder.DropTable(
-                name: "Ratings");
+                name: "TransferRequests");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

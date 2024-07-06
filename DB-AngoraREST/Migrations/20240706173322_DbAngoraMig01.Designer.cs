@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DB_AngoraREST.Migrations
 {
     [DbContext(typeof(DB_AngoraContext))]
-    [Migration("20240705172648_DbAngoraMig01")]
+    [Migration("20240706173322_DbAngoraMig01")]
     partial class DbAngoraMig01
     {
         /// <inheritdoc />
@@ -25,7 +25,7 @@ namespace DB_AngoraREST.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("DB_AngoraLib.Models.BreederApplication", b =>
+            modelBuilder.Entity("DB_AngoraLib.Models.ApplicationBreeder", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -33,7 +33,7 @@ namespace DB_AngoraREST.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateOnly>("DateApplied")
+                    b.Property<DateOnly>("DateSubmitted")
                         .HasColumnType("date");
 
                     b.Property<string>("DocumentationPath")
@@ -50,15 +50,42 @@ namespace DB_AngoraREST.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserId")
+                    b.Property<string>("UserApplicantId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserApplicantId");
 
                     b.ToTable("BreederApplications");
+                });
+
+            modelBuilder.Entity("DB_AngoraLib.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("DB_AngoraLib.Models.Photo", b =>
@@ -248,7 +275,7 @@ namespace DB_AngoraREST.Migrations
 
                     b.HasIndex("RecipentId");
 
-                    b.ToTable("RabbitTransfers");
+                    b.ToTable("TransferRequests");
                 });
 
             modelBuilder.Entity("DB_AngoraLib.Models.User", b =>
@@ -475,11 +502,11 @@ namespace DB_AngoraREST.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("DB_AngoraLib.Models.BreederApplication", b =>
+            modelBuilder.Entity("DB_AngoraLib.Models.ApplicationBreeder", b =>
                 {
                     b.HasOne("DB_AngoraLib.Models.User", "UserApplicant")
                         .WithMany("BreederApplications")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UserApplicantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

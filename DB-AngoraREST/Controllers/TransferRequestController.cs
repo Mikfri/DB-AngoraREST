@@ -25,7 +25,7 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [HttpPost("Create")]
         [Authorize(Roles = "Admin, Breeder, Moderator")]
-        public async Task<ActionResult<TransferRequest_PreviewDTO>> Create_TransferRequest([FromBody] TransferRequest_CreateDTO createTransferDTO)
+        public async Task<ActionResult<TransferRequest_ContractDTO>> Create_TransferRequest([FromBody] TransferRequest_CreateDTO createTransferDTO)
         {
             try
             {
@@ -37,7 +37,8 @@ namespace DB_AngoraREST.Controllers
                 }
 
                 var result = await _transferService.CreateTransferRequest(issuerId, createTransferDTO);
-                return Ok(result);
+                //return Ok(result);
+                return CreatedAtAction(nameof(Get_TransferContract), new { transferId = result.Id }, result);
             }
             catch (ArgumentNullException ex)
             {
@@ -76,13 +77,13 @@ namespace DB_AngoraREST.Controllers
                 }
 
                 var result = await _transferService.Get_RabbitTransfer_Contract(userId, transferId);
-                return CreatedAtAction(nameof(Get_TransferContract), new { transferId = result.Id }, result);
+                return Ok(result);
             }
             catch (ArgumentException ex)
             {
                 return NotFound(ex.Message);
             }
-            catch (InvalidOperationException ex)
+            catch (UnauthorizedAccessException ex)
             {
                 return Forbid(ex.Message); 
             }
@@ -128,7 +129,6 @@ namespace DB_AngoraREST.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Der opstod en fejl under behandlingen af din anmodning.");
             }
         }
-
 
     }
 }

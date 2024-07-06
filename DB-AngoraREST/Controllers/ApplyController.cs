@@ -30,7 +30,7 @@ namespace DB_AngoraREST.Controllers
         //NB! AUTHORIZE er nødvendig for at kunne hente userId fra Claims - 3+ hours spent on this -.-'
         [Authorize]
         [HttpPost("Breeder")]
-        public async Task<IActionResult> ApplyForBreederRole([FromBody] Application_BreederDTO applicationDto)
+        public async Task<IActionResult> ApplyForBreederRole([FromBody] ApplicationBreeder_CreateDTO applicationDto)
         {
             try
             {
@@ -41,7 +41,7 @@ namespace DB_AngoraREST.Controllers
                     return Unauthorized("Bruger ikke fundet");
                 }
 
-                await _applicationService.ApplyForBreederRoleAsync(userId, applicationDto);
+                await _applicationService.Apply_ApplicationBreeder(userId, applicationDto);
                 return Ok("Ansøgning modtaget");
             }
             catch (System.Exception ex)
@@ -49,46 +49,14 @@ namespace DB_AngoraREST.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
-
-        // POST metode til at godkende en ansøgning
-        [HttpPost("Breeder/Approve/{applicationId}")]
-        [Authorize(Roles = "Admin, Moderator")]
-        public async Task<IActionResult> ApproveApplication(int applicationId)
-        {
-            try
-            {
-                await _applicationService.ApproveApplicationAsync(applicationId);
-                return Ok("Ansøgning godkendt");
-            }
-            catch (System.Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        // POST metode til at afvise en ansøgning
-        [HttpPost("Breeder/Reject/{applicationId}")]
-        [Authorize(Roles = "Admin, Moderator")]
-        public async Task<IActionResult> RejectApplication(int applicationId, [FromBody] string rejectionReason)
-        {
-            try
-            {
-                await _applicationService.RejectApplicationAsync(applicationId, rejectionReason);
-                return Ok("Ansøgning afvist");
-            }
-            catch (System.Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        
 
         // GET metode til at hente alle afventende ansøgninger
         [HttpGet("Pending")]
         [Authorize(Roles = "Admin, Moderator")]
-        public async Task<ActionResult<IEnumerable<BreederApplication>>> GetPendingApplications()
+        public async Task<ActionResult<IEnumerable<ApplicationBreeder>>> GetPendingApplications()
         {
-            var applications = await _applicationService.GetPendingApplicationsAsync();
+            var applications = await _applicationService.GetAll_ApplicationBreeder_Pending();
             return Ok(applications);
         }
     }

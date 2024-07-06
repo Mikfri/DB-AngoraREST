@@ -28,7 +28,7 @@ builder.Services.AddScoped<IGRepository<Rabbit>, GRepository<Rabbit>>();
 builder.Services.AddScoped<IRabbitService, RabbitServices>();
 builder.Services.AddScoped<IGRepository<User>, GRepository<User>>();
 
-builder.Services.AddScoped<IGRepository<BreederApplication>, GRepository<BreederApplication>>();
+builder.Services.AddScoped<IGRepository<ApplicationBreeder>, GRepository<ApplicationBreeder>>();
 builder.Services.AddScoped<IApplicationService, ApplicationServices>();
 
 builder.Services.AddScoped<IGRepository<TransferRequst>, GRepository<TransferRequst>>();
@@ -39,7 +39,7 @@ builder.Services.AddScoped<NotificationService>();
 
 
 builder.Services.AddTransient<IEmailService, EmailServices>();
-builder.Services.AddScoped<RabbitValidator>();
+builder.Services.AddScoped<Rabbit_Validator>();
 
 // Mine Lib IdentityUser services
 builder.Services.AddScoped<IAccountService, AccountServices>();
@@ -62,12 +62,19 @@ builder.Services.AddDistributedMemoryCache(); // Adds a default in-memory implem
 //    options.Cookie.IsEssential = true;
 //});
 
-
 builder.Services.AddControllers();
 
+var connectionStringName = "DefaultConnection";
+
+// Du kan tilføje en betingelse for at skifte mellem forbindelsesstrengene
+// For eksempel, baseret på en miljøvariabel eller en konfigurationsværdi
+if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+{
+    connectionStringName = "SecretConnection";
+}
 // -----------------: DB CONNECTION-STRING & MIGRATION SETUP
 builder.Services.AddDbContext<DB_AngoraContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+    options.UseSqlServer(builder.Configuration.GetConnectionString(connectionStringName),
     b => b.MigrationsAssembly("DB-AngoraREST")));
 
 
@@ -104,7 +111,6 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization(options =>
 {
     //-----------------: RABBIT POLICIES
-
     options.AddPolicy("UpdateRabbit", policy =>
     policy.RequireAssertion(context =>
         context.User.HasClaim("Rabbit:Update", "Own") ||
