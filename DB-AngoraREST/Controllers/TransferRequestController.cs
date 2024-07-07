@@ -18,6 +18,8 @@ namespace DB_AngoraREST.Controllers
             _transferService = transferService;
         }
 
+        //--------------------: POST :--------------------
+
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -59,41 +61,6 @@ namespace DB_AngoraREST.Controllers
             }
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpGet("Get/{transferId}")]
-        [Authorize(Roles = "Admin, Breeder, Moderator")]
-        public async Task<ActionResult<TransferRequest_ContractDTO>> Get_TransferContract(int transferId)
-        {
-            try
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                if (userId == null)
-                {
-                    return Unauthorized("Bruger ID mangler eller er ugyldigt.");
-                }
-
-                var result = await _transferService.Get_RabbitTransfer_Contract(userId, transferId);
-                return Ok(result);
-            }
-            catch (ArgumentException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Forbid(ex.Message); 
-            }
-            catch (Exception ex)
-            {
-                // Log fejlen
-                return StatusCode(StatusCodes.Status500InternalServerError, "Der opstod en fejl under behandlingen af din anmodning.");
-            }
-        }
-
         [HttpPost("Respond/{transferId}")]
         [Authorize(Roles = "Admin, Breeder, Moderator")]
         public async Task<IActionResult> RespondToTransferRequest(int transferId, [FromBody] TransferRequest_ResponseDTO responseDTO)
@@ -129,6 +96,76 @@ namespace DB_AngoraREST.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Der opstod en fejl under behandlingen af din anmodning.");
             }
         }
+
+        //--------------------: GET :--------------------
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpGet("Get/{transferId}")]
+        [Authorize(Roles = "Admin, Breeder, Moderator")]
+        public async Task<ActionResult<TransferRequest_ContractDTO>> Get_TransferContract(int transferId)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (userId == null)
+                {
+                    return Unauthorized("Bruger ID mangler eller er ugyldigt.");
+                }
+
+                var result = await _transferService.Get_RabbitTransfer_Contract(userId, transferId);
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message); 
+            }
+            catch (Exception ex)
+            {
+                // Log fejlen
+                return StatusCode(StatusCodes.Status500InternalServerError, "Der opstod en fejl under behandlingen af din anmodning.");
+            }
+        }
+
+        //--------------------: DELETE :--------------------
+        [HttpDelete("Delete/{transferRequestId}")]
+        [Authorize(Roles = "Admin, Breeder, Moderator")]
+        public async Task<ActionResult<TransferRequest_PreviewDTO>> Delete_TransferRequest(int transferRequestId)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (userId == null)
+                {
+                    return Unauthorized("Bruger ID mangler eller er ugyldigt.");
+                }
+
+                var result = await _transferService.DeleteTransferRequest(userId, transferRequestId);
+                return Ok(result);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message); // Bruger har ikke tilladelse
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message); // Operationen er ikke tilladt
+            }
+            catch (Exception ex)
+            {
+                // Log fejlen
+                return StatusCode(StatusCodes.Status500InternalServerError, "Der opstod en fejl under behandlingen af din anmodning.");
+            }
+        }
+
 
     }
 }

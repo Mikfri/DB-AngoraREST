@@ -89,7 +89,7 @@ namespace DB_AngoraREST.Controllers
         public async Task<IActionResult> GetMyFilteredRabbits([FromQuery] Rabbit_FilteredRequestDTO filter)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var rabbits = await _accountService.Get_Rabbits_OwnedAlive_FilteredAsync(userId, filter);
+            var rabbits = await _accountService.GetAll_RabbitsOwned_Filtered(userId, filter);
             return Ok(rabbits);
         }
 
@@ -113,7 +113,7 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)] // Unauthorized, hvis brugeren har en ugyldig token (ikke logget ind eller tokenfejl)
         [ProducesResponseType(StatusCodes.Status403Forbidden)]    // Forbidden, hvis brugeren ikke har adgang til ressourcen
-        [HttpGet("ReceivedTransferRequests")]
+        [HttpGet("TransferRequests_Received")]
         [Authorize(Roles = "Admin, Breeder, Moderator")]
         public async Task<ActionResult<List<TransferRequest_ReceivedDTO>>> GetReceivedTransferRequests([FromQuery] TransferRequest_ReceivedFilterDTO filter)
         {
@@ -124,6 +124,23 @@ namespace DB_AngoraREST.Controllers
             }
 
             var transferRequests = await _accountService.Get_TransferRequests_Received(userId, filter);
+            return Ok(transferRequests);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)] // Unauthorized, hvis brugeren har en ugyldig token (ikke logget ind eller tokenfejl)
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]    // Forbidden, hvis brugeren ikke har adgang til ressourcen
+        [HttpGet("TransferRequests_Issued")]
+        [Authorize(Roles = "Admin, Breeder, Moderator")]
+        public async Task<ActionResult<List<TransferRequest_SentDTO>>> GetSentTransferRequests([FromQuery] TransferRequest_SentFilterDTO filter)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized("Bruger ID mangler eller er ugyldigt.");
+            }
+
+            var transferRequests = await _accountService.Get_TransferRequests_Sent(userId, filter);
             return Ok(transferRequests);
         }
 

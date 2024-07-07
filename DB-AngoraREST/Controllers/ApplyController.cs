@@ -29,7 +29,7 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         //NB! AUTHORIZE er nødvendig for at kunne hente userId fra Claims - 3+ hours spent on this -.-'
         [Authorize]
-        [HttpPost("Breeder")]
+        [HttpPost("ApplicationBreeder")]
         public async Task<IActionResult> ApplyForBreederRole([FromBody] ApplicationBreeder_CreateDTO applicationDto)
         {
             try
@@ -52,7 +52,7 @@ namespace DB_AngoraREST.Controllers
         
 
         // GET metode til at hente alle afventende ansøgninger
-        [HttpGet("Pending")]
+        [HttpGet("Get/ApplicationBreeder/Pending")]
         [Authorize(Roles = "Admin, Moderator")]
         public async Task<ActionResult<IEnumerable<ApplicationBreeder>>> GetPendingApplications()
         {
