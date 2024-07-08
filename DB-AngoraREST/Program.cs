@@ -47,7 +47,7 @@ builder.Services.AddScoped<ISigninService, SigninServices>();
 builder.Services.AddScoped<IRoleService, RoleServices>();
 
 // Bind EmailSettings fra appsettings.json
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<Settings_Email>(builder.Configuration.GetSection("EmailSettings"));
 
 // Registrer EmailService med dependency injection
 //builder.Services.AddTransient<IEmailService, EmailService>();
@@ -106,6 +106,15 @@ builder.Services.AddAuthentication(options =>
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
     });
+
+//builder.Services.AddAuthentication().AddGoogle(googleOptions =>
+//{
+//    googleOptions.ClientId = "DitGoogleClientId";
+//    googleOptions.ClientSecret = "DinGoogleClientSecret";
+//    googleOptions.Scope.Add("openid");
+//    googleOptions.Scope.Add("email");
+//    googleOptions.Scope.Add("profile");
+//});
 
 //--------: Authorization
 builder.Services.AddAuthorization(options =>

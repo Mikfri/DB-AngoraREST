@@ -235,6 +235,50 @@ namespace DB_AngoraREST.Migrations
                     b.ToTable("Ratings");
                 });
 
+            modelBuilder.Entity("DB_AngoraLib.Models.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedByIp")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReplacedByToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("Revoked")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RevokedByIp")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
             modelBuilder.Entity("DB_AngoraLib.Models.TransferRequst", b =>
                 {
                     b.Property<int>("Id")
@@ -557,6 +601,17 @@ namespace DB_AngoraREST.Migrations
                     b.Navigation("RabbitRated");
                 });
 
+            modelBuilder.Entity("DB_AngoraLib.Models.RefreshToken", b =>
+                {
+                    b.HasOne("DB_AngoraLib.Models.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DB_AngoraLib.Models.TransferRequst", b =>
                 {
                     b.HasOne("DB_AngoraLib.Models.User", "UserIssuer")
@@ -652,6 +707,8 @@ namespace DB_AngoraREST.Migrations
                     b.Navigation("RabbitsLinked");
 
                     b.Navigation("RabbitsOwned");
+
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }

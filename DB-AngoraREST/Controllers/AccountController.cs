@@ -103,7 +103,7 @@ namespace DB_AngoraREST.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Console.WriteLine($"Getting rabbits for user with ID: {userId}");
 
-            var rabbits = await _accountService.Get_Rabbits_FromMyFold(userId);
+            var rabbits = await _accountService.GetAll_Rabbits_FromMyFold(userId);
 
             Console.WriteLine($"Got {rabbits.Count} rabbits for user with ID: {userId}");
 
@@ -123,7 +123,7 @@ namespace DB_AngoraREST.Controllers
                 return Unauthorized("Bruger ID mangler eller er ugyldigt.");
             }
 
-            var transferRequests = await _accountService.Get_TransferRequests_Received(userId, filter);
+            var transferRequests = await _accountService.GetAll_TransferRequests_Received(userId, filter);
             return Ok(transferRequests);
         }
 
@@ -140,7 +140,7 @@ namespace DB_AngoraREST.Controllers
                 return Unauthorized("Bruger ID mangler eller er ugyldigt.");
             }
 
-            var transferRequests = await _accountService.Get_TransferRequests_Sent(userId, filter);
+            var transferRequests = await _accountService.GetAll_TransferRequests_Sent(userId, filter);
             return Ok(transferRequests);
         }
 
@@ -152,7 +152,7 @@ namespace DB_AngoraREST.Controllers
         [HttpGet("All")]
         public async Task<IActionResult> GetAllUsers()
         {
-            var users = await _accountService.Get_AllUsersAsync();
+            var users = await _accountService.GetAll_Users();
             return Ok(users);
         }
 
@@ -164,7 +164,7 @@ namespace DB_AngoraREST.Controllers
         [HttpGet("ByBreederRegNo/{breederRegNo}")]
         public async Task<IActionResult> GetUserByBreederRegNo(string breederRegNo)
         {
-            var user = await _accountService.Get_UserByBreederRegNoAsync(breederRegNo);
+            var user = await _accountService.Get_UserByBreederRegNo(breederRegNo);
             if (user != null)
             {
                 return Ok(user);
@@ -180,7 +180,7 @@ namespace DB_AngoraREST.Controllers
         [HttpGet("GetUserByUserNameOrEmail/{userNameOrEmail}")]
         public async Task<IActionResult> GetUserByUserNameOrEmail(string userNameOrEmail)
         {
-            var user = await _accountService.Get_UserByUserNameOrEmailAsync(userNameOrEmail);
+            var user = await _accountService.Get_UserByUserNameOrEmail(userNameOrEmail);
             if (user != null)
             {
                 return Ok(user);

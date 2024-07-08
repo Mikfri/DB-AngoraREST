@@ -135,6 +135,11 @@ namespace DB_AngoraREST.Controllers
         }
 
         //--------------------: DELETE :--------------------
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [HttpDelete("Delete/{transferRequestId}")]
         [Authorize(Roles = "Admin, Breeder, Moderator")]
         public async Task<ActionResult<TransferRequest_PreviewDTO>> Delete_TransferRequest(int transferRequestId)
@@ -154,6 +159,10 @@ namespace DB_AngoraREST.Controllers
             catch (UnauthorizedAccessException ex)
             {
                 return Forbid(ex.Message); // Bruger har ikke tilladelse
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message); // Bruger har ikke tilladelse
             }
             catch (InvalidOperationException ex)
             {
