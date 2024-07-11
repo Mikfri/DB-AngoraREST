@@ -7,9 +7,12 @@ using DB_AngoraLib.Services.EmailService;
 using DB_AngoraLib.Services.RabbitService;
 using DB_AngoraLib.Services.RoleService;
 using DB_AngoraLib.Services.SigninService;
+using DB_AngoraLib.Services.TokenService;
 using DB_AngoraLib.Services.TransferService;
 using DB_AngoraLib.Services.ValidationService;
 using DB_AngoraREST.DB_DataStarter;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -27,22 +30,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IGRepository<Rabbit>, GRepository<Rabbit>>();
 builder.Services.AddScoped<IRabbitService, RabbitServices>();
 builder.Services.AddScoped<IGRepository<User>, GRepository<User>>();
-
+builder.Services.AddScoped<IAccountService, AccountServices>();
 builder.Services.AddScoped<IGRepository<ApplicationBreeder>, GRepository<ApplicationBreeder>>();
 builder.Services.AddScoped<IApplicationService, ApplicationServices>();
-
 builder.Services.AddScoped<IGRepository<TransferRequst>, GRepository<TransferRequst>>();
 builder.Services.AddScoped<ITransferService, TransferServices>();
-
+builder.Services.AddScoped<IGRepository<RefreshToken>, GRepository<RefreshToken>>();
+builder.Services.AddScoped<ITokenService, TokenServices>();
 builder.Services.AddScoped<IGRepository<Notification>, GRepository<Notification>>();
 builder.Services.AddScoped<NotificationService>();
-
-
 builder.Services.AddTransient<IEmailService, EmailServices>();
+
 builder.Services.AddScoped<Rabbit_Validator>();
 
 // Mine Lib IdentityUser services
-builder.Services.AddScoped<IAccountService, AccountServices>();
 builder.Services.AddScoped<ISigninService, SigninServices>();
 builder.Services.AddScoped<IRoleService, RoleServices>();
 
@@ -52,26 +53,18 @@ builder.Services.Configure<Settings_Email>(builder.Configuration.GetSection("Ema
 // Registrer EmailService med dependency injection
 //builder.Services.AddTransient<IEmailService, EmailService>();
 
-
 builder.Services.AddDistributedMemoryCache(); // Adds a default in-memory implementation of IDistributedCache
-
-//builder.Services.AddSession(options =>          
-//{
-//    options.IdleTimeout = TimeSpan.FromMinutes(30);
-//    options.Cookie.HttpOnly = true;
-//    options.Cookie.IsEssential = true;
-//});
 
 builder.Services.AddControllers();
 
+/// Du kan tilføje en betingelse for at skifte mellem forbindelsesstrengene for eksempel,
+/// baseret på en miljøvariabel eller en konfigurationsværdi
 var connectionStringName = "DefaultConnection";
+//if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+//{
+//    connectionStringName = "SecretConnection";
+//}
 
-// Du kan tilføje en betingelse for at skifte mellem forbindelsesstrengene
-// For eksempel, baseret på en miljøvariabel eller en konfigurationsværdi
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
-{
-    connectionStringName = "SecretConnection";
-}
 // -----------------: DB CONNECTION-STRING & MIGRATION SETUP
 builder.Services.AddDbContext<DB_AngoraContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString(connectionStringName),
@@ -85,36 +78,44 @@ builder.Services.AddIdentity<User, IdentityRole>()
     .AddSignInManager()
     .AddRoles<IdentityRole>();
 
-
 //------------------: JWT
 //--------: Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        };
-    });
+    ///Når en uautoriseret anmodning modtages, vil brugeren blive omdirigeret til Google's login side.
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+    //options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
-//builder.Services.AddAuthentication().AddGoogle(googleOptions =>
-//{
-//    googleOptions.ClientId = "DitGoogleClientId";
-//    googleOptions.ClientSecret = "DinGoogleClientSecret";
-//    googleOptions.Scope.Add("openid");
-//    googleOptions.Scope.Add("email");
-//    googleOptions.Scope.Add("profile");
-//});
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+})
+// Dette er Googles OAuth2.0 config, så "AddOAuth("OAuth", options =>" er ikke nødvendig
+.AddGoogle(googleOptions => 
+{
+    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    googleOptions.CallbackPath = "/signin-google";
+    //googleOptions.CallbackPath = "https://localhost:7276/signin-google";  // Forkert?
+    googleOptions.Scope.Add("https://www.googleapis.com/auth/userinfo.email");
+    googleOptions.Scope.Add("https://www.googleapis.com/auth/userinfo.profile");
+    googleOptions.Scope.Add("openid");
+});
+
+
+//builder.Services.AddAuthentication()
+
 
 //--------: Authorization
 builder.Services.AddAuthorization(options =>
@@ -135,39 +136,64 @@ builder.Services.AddAuthorization(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer(); // Swagger API-dokumentation (///<summary> over dine API end-points vises i UI)
 
-//--------: Authentication UI
+//--------: Google.OAuth2, Authentication UI
 builder.Services.AddSwaggerGen(options =>
 {
-    //options.MapType<DateOnly>(() => new OpenApiSchema
-    //{
-    //    Type = "string",
-    //    Format = "date" // Dette angiver, at DateOnly skal vises som en dato-vælger i UI'et
-    //});
-    options.AddSecurityDefinition("oath2", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http, // .ApiKey,
-        //Type = SecuritySchemeType.OAuth2,
-        Scheme = "Bearer"
-    });
-    options.OperationFilter<SecurityRequirementsOperationFilter>(true, "oath2");
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "DB-AngoraREST API", Version = "v1" });
 
+    // Definerer OAuth2.0 flowet for Swagger UI
+    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.OAuth2,
+        Flows = new OpenApiOAuthFlows
+        {
+            Implicit = new OpenApiOAuthFlow
+            {
+                AuthorizationUrl = new Uri("https://accounts.google.com/o/oauth2/v2/auth"),
+                Scopes = new Dictionary<string, string>
+                {
+                    { "https://www.googleapis.com/auth/userinfo.email", "Email" },
+                    { "https://www.googleapis.com/auth/userinfo.profile", "Profile" },
+                    { "openid", "OpenID" }
+                }
+            }
+        }
+    });
+
+    // Tilføjer OAuth2.0 sikkerhedskrav til Swagger UI, så det kan bruge det definerede flow
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "oauth2"
+                },
+                Scheme = "oauth2",
+                Name = "oauth2",
+                In = ParameterLocation.Header
+            },
+            new List<string>() // Scopes her, hvis nødvendigt
+        }
+    });
 });
 
-//--------------------: OAUTH2 eksempel.. måske der findes noget lettere.. // TODO: Implement this
-//builder.Services.AddAuthentication()
-//    .AddOAuth("OAuth2", options =>
+//--------: JWT, Authentication UI
+//builder.Services.AddSwaggerGen(options =>
+//{
+//    options.AddSecurityDefinition("Oauth2", new OpenApiSecurityScheme
 //    {
-//        options.ClientId = "<client-id>";
-//        options.ClientSecret = "<client-secret>";
-//        options.CallbackPath = new PathString("/callback");
-
-//        options.AuthorizationEndpoint = "https://<authorization-server>/authorize";
-//        options.TokenEndpoint = "https://<authorization-server>/token";
-
-//        options.SaveTokens = true;
+//        In = ParameterLocation.Header,
+//        Name = "Authorization",
+//        Type = SecuritySchemeType.Http, // .ApiKey,
+//        //Type = SecuritySchemeType.OAuth2,
+//        Scheme = "Bearer"
 //    });
+//    options.OperationFilter<SecurityRequirementsOperationFilter>(true, "Oauth2");
+
+//});
 
 
 //--------: JSON ENUM CONVERTER
@@ -205,7 +231,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();    // IdentityUser setup
-//app.UseSession();           // IdentityUser setup // Skal ikke bruges, da vi bruger JWT
 app.UseAuthorization();
 
 app.MapControllers();
