@@ -87,6 +87,29 @@ namespace DB_AngoraREST.Controllers
             return Unauthorized(new { error = "Invalid login attempt" });
         }
 
+        //[HttpPost("LoginWithGoogle")]
+        //public async Task<IActionResult> LoginWithGoogle([FromBody] GoogleTokenDTO googleTokenDTO)
+        //{
+        //    // Antager at googleTokenDTO indeholder en egenskab `Token` som er den token, der sendes fra klienten
+        //    var googleToken = googleTokenDTO.Token;
+
+        //    // Valider Google token og hent brugerens information (implementer denne logik i din SigninService eller et tilsvarende sted)
+        //    var userInfo = await _signinService.ValidateGoogleToken(googleToken);
+        //    if (userInfo == null)
+        //    {
+        //        return Unauthorized("Ugyldig Google token.");
+        //    }
+
+        //    // Find eller opret brugeren i din database baseret på userInfo (implementer denne logik i din AccountService eller et tilsvarende sted)
+        //    var user = await _accountService.FindOrCreateUser(userInfo);
+
+        //    // Generer en token for din applikation baseret på brugeren
+        //    var token = _signinService.GenerateJwtToken(user);
+
+        //    // Returner token til klienten
+        //    return Ok(new { Token = token });
+        //}
+
 
 
         //--------------------: GET :--------------------

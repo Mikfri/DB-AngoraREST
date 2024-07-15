@@ -84,8 +84,8 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     ///Når en uautoriseret anmodning modtages, vil brugeren blive omdirigeret til Google's login side.
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-    //options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    //options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
 })
 .AddJwtBearer(options =>
@@ -106,8 +106,8 @@ builder.Services.AddAuthentication(options =>
 {
     googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    googleOptions.CallbackPath = "/signin-google";
-    //googleOptions.CallbackPath = "https://localhost:7276/signin-google";  // Forkert?
+    //googleOptions.CallbackPath = "/api/Auth/signin-google";
+    googleOptions.CallbackPath = new PathString("/api/Auth/signin-google");
     googleOptions.Scope.Add("https://www.googleapis.com/auth/userinfo.email");
     googleOptions.Scope.Add("https://www.googleapis.com/auth/userinfo.profile");
     googleOptions.Scope.Add("openid");
@@ -132,15 +132,15 @@ builder.Services.AddAuthorization(options =>
         context.User.HasClaim("Rabbit:Delete", "Any")));
 });
 
+builder.Services.AddEndpointsApiExplorer(); // Swagger API-dokumentation (///<summary> over dine API end-points vises i UI)
+
 //--------------------: SWAGGER
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer(); // Swagger API-dokumentation (///<summary> over dine API end-points vises i UI)
 
 //--------: Google.OAuth2, Authentication UI
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "DB-AngoraREST API", Version = "v1" });
-
     // Definerer OAuth2.0 flowet for Swagger UI
     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
     {
@@ -159,7 +159,6 @@ builder.Services.AddSwaggerGen(options =>
             }
         }
     });
-
     // Tilføjer OAuth2.0 sikkerhedskrav til Swagger UI, så det kan bruge det definerede flow
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -178,22 +177,34 @@ builder.Services.AddSwaggerGen(options =>
             new List<string>() // Scopes her, hvis nødvendigt
         }
     });
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer"
+    });
+    // Tilføj sikkerhedskrav for Bearer-token
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header,
+            },
+            new List<string>()
+        }
+    });
 });
 
-//--------: JWT, Authentication UI
-//builder.Services.AddSwaggerGen(options =>
-//{
-//    options.AddSecurityDefinition("Oauth2", new OpenApiSecurityScheme
-//    {
-//        In = ParameterLocation.Header,
-//        Name = "Authorization",
-//        Type = SecuritySchemeType.Http, // .ApiKey,
-//        //Type = SecuritySchemeType.OAuth2,
-//        Scheme = "Bearer"
-//    });
-//    options.OperationFilter<SecurityRequirementsOperationFilter>(true, "Oauth2");
-
-//});
 
 
 //--------: JSON ENUM CONVERTER
@@ -204,6 +215,18 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 
 });
 
+//--------: Konfigurer CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "MyAllowSpecificOrigins",
+    policy =>
+    {
+        //policy.AllowAnyOrigin() // Vær forsigtig med at bruge AllowAnyOrigin() i produktion
+        policy.WithOrigins("https://localhost:7276")
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
@@ -221,7 +244,7 @@ using (var scope = serviceScopeFactory.CreateScope())
     DbInitializer.Initialize(context, userManager, roleManager);
 }
 
-
+app.UseCors("MyAllowSpecificOrigins");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
