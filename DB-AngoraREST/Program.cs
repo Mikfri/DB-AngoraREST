@@ -22,8 +22,11 @@ using Swashbuckle.AspNetCore.Filters;
 using System;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 //-----------------: DB-AngoraLib Services
@@ -50,16 +53,12 @@ builder.Services.AddScoped<IRoleService, RoleServices>();
 // Bind EmailSettings fra appsettings.json
 builder.Services.Configure<Settings_Email>(builder.Configuration.GetSection("EmailSettings"));
 
-// Registrer EmailService med dependency injection
-//builder.Services.AddTransient<IEmailService, EmailService>();
-
 builder.Services.AddDistributedMemoryCache(); // Adds a default in-memory implementation of IDistributedCache
 
-builder.Services.AddControllers();
 
-/// Du kan tilføje en betingelse for at skifte mellem forbindelsesstrengene for eksempel,
-/// baseret på en miljøvariabel eller en konfigurationsværdi
-var connectionStringName = "DefaultConnection";
+/// Du kan tilfï¿½je en betingelse for at skifte mellem forbindelsesstrengene for eksempel,
+/// baseret pï¿½ en miljï¿½variabel eller en konfigurationsvï¿½rdi
+var connectionStringName = "SecretConnection";
 //if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
 //{
 //    connectionStringName = "SecretConnection";
@@ -78,15 +77,27 @@ builder.Services.AddIdentity<User, IdentityRole>()
     .AddSignInManager()
     .AddRoles<IdentityRole>();
 
+
 //------------------: JWT
 //--------: Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    ///Når en uautoriseret anmodning modtages, vil brugeren blive omdirigeret til Google's login side.
+    ///Nï¿½r en uautoriseret anmodning modtages, vil brugeren blive omdirigeret til Google's login side.
     //options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
+})
+// Dette er Googles OAuth2.0 config,
+.AddGoogle(googleOptions =>   // validerer automatisk "ya29." tokenet fra Google
+{
+    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    googleOptions.CallbackPath = new PathString("/api/auth/signin-google");
+    //googleOptions.CallbackPath = builder.Configuration["Authentication:Google:CallbackPath"];
+    //Console.WriteLine($"Google CallbackPath: {googleOptions.CallbackPath}");
+
+    //googleOptions.SaveTokens = true;    // Hvad gï¿½r denne? - Gemmer tokens i cookie?
 })
 .AddJwtBearer(options =>
 {
@@ -100,21 +111,8 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
-})
-// Dette er Googles OAuth2.0 config, så "AddOAuth("OAuth", options =>" er ikke nødvendig
-.AddGoogle(googleOptions => 
-{
-    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    //googleOptions.CallbackPath = "/api/Auth/signin-google";
-    googleOptions.CallbackPath = new PathString("/api/Auth/signin-google");
-    googleOptions.Scope.Add("https://www.googleapis.com/auth/userinfo.email");
-    googleOptions.Scope.Add("https://www.googleapis.com/auth/userinfo.profile");
-    googleOptions.Scope.Add("openid");
 });
 
-
-//builder.Services.AddAuthentication()
 
 
 //--------: Authorization
@@ -136,30 +134,42 @@ builder.Services.AddEndpointsApiExplorer(); // Swagger API-dokumentation (///<su
 
 //--------------------: SWAGGER
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-
 //--------: Google.OAuth2, Authentication UI
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "DB-AngoraREST API", Version = "v1" });
-    // Definerer OAuth2.0 flowet for Swagger UI
+
+    // TilfÃ¸j Google OAuth2 konfiguration
     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
     {
         Type = SecuritySchemeType.OAuth2,
         Flows = new OpenApiOAuthFlows
         {
-            Implicit = new OpenApiOAuthFlow
+            AuthorizationCode = new OpenApiOAuthFlow
             {
                 AuthorizationUrl = new Uri("https://accounts.google.com/o/oauth2/v2/auth"),
+                TokenUrl = new Uri("https://oauth2.googleapis.com/token"),
                 Scopes = new Dictionary<string, string>
                 {
-                    { "https://www.googleapis.com/auth/userinfo.email", "Email" },
-                    { "https://www.googleapis.com/auth/userinfo.profile", "Profile" },
-                    { "openid", "OpenID" }
+                    { "openid", "OpenID" },
+                    { "profile", "Profile" },
+                    { "email", "Email" }
                 }
             }
         }
     });
-    // Tilføjer OAuth2.0 sikkerhedskrav til Swagger UI, så det kan bruge det definerede flow
+
+    // TilfÃ¸j JWT Bearer konfiguration
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer"
+    });
+
+    // TilfÃ¸j sikkerhedskrav for OAuth2 og Bearer-token
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -172,22 +182,10 @@ builder.Services.AddSwaggerGen(options =>
                 },
                 Scheme = "oauth2",
                 Name = "oauth2",
-                In = ParameterLocation.Header
+                In = ParameterLocation.Header,
             },
-            new List<string>() // Scopes her, hvis nødvendigt
-        }
-    });
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Please enter a valid token",
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "Bearer"
-    });
-    // Tilføj sikkerhedskrav for Bearer-token
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
+            new List<string>() // Scopes her, hvis nÃ¸dvendigt
+        },
         {
             new OpenApiSecurityScheme
             {
@@ -211,7 +209,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; // Sørger for at refence-loop kan håndteres, som er tilfældet for Rabbit_PedigreeDTO
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; // Sï¿½rger for at refence-loop kan hï¿½ndteres, som er tilfï¿½ldet for Rabbit_PedigreeDTO
 
 });
 
@@ -221,7 +219,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "MyAllowSpecificOrigins",
     policy =>
     {
-        //policy.AllowAnyOrigin() // Vær forsigtig med at bruge AllowAnyOrigin() i produktion
+        //policy.AllowAnyOrigin() // Vï¿½r forsigtig med at bruge AllowAnyOrigin() i produktion
         policy.WithOrigins("https://localhost:7276")
         .AllowAnyHeader()
         .AllowAnyMethod();
@@ -230,19 +228,18 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-//-----------------: DB-INITIALIZER setup
+//-----------------: DB-INITIALIZER setup // UDKOMENTER nï¿½r der skal laves DGML
 // Get the service scope factory
-var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
-// Create a new scope
-using (var scope = serviceScopeFactory.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<DB_AngoraContext>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    // Initialize the database
-    DbInitializer.Initialize(context, userManager, roleManager);
-}
+//var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+//using (var scope = serviceScopeFactory.CreateScope())
+//{
+//    var context = scope.ServiceProvider.GetRequiredService<DB_AngoraContext>();
+//    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+//    DbInitializer.Initialize(context, userManager, roleManager);
+//}
 
 app.UseCors("MyAllowSpecificOrigins");
 // Configure the HTTP request pipeline.

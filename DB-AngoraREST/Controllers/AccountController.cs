@@ -53,63 +53,7 @@ namespace DB_AngoraREST.Controllers
 
             // Hvis vi er nået hertil, er der noget galt, vis formular igen
             return BadRequest(ModelState);
-        }
-
-
-        //--------------------: LOGIN :--------------------
-        //[ProducesResponseType(StatusCodes.Status200OK)]             // TODO: Find ud af hvor vi pakker token ind i HttpOnly og Secure cookie
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[HttpPost("Login")]
-        //public async Task<IActionResult> Login(Login_RequestDTO loginDTO)
-        //{
-        //    var result = await _signinService.LoginAsync(loginDTO);
-        //    if (!string.IsNullOrEmpty(result.Token))
-        //    {
-        //        return Ok(result);
-        //    }
-        //    return Unauthorized(new { error = "Invalid login attempt" });
-        //}
-
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [HttpPost("Login")]
-        public async Task<IActionResult> Login(Login_RequestDTO loginDTO)
-        {
-            // Hent brugerens IP-adresse
-            var userIP = HttpContext.Connection.RemoteIpAddress?.ToString();
-
-            // Videregiv både loginDTO og userIP til LoginAsync metoden
-            var result = await _signinService.LoginAsync(userIP, loginDTO);
-            if (result.AccessToken != null) // Opdater denne linje til at tjekke for AccessToken i stedet for Token
-            {
-                return Ok(result);
-            }
-            return Unauthorized(new { error = "Invalid login attempt" });
-        }
-
-        //[HttpPost("LoginWithGoogle")]
-        //public async Task<IActionResult> LoginWithGoogle([FromBody] GoogleTokenDTO googleTokenDTO)
-        //{
-        //    // Antager at googleTokenDTO indeholder en egenskab `Token` som er den token, der sendes fra klienten
-        //    var googleToken = googleTokenDTO.Token;
-
-        //    // Valider Google token og hent brugerens information (implementer denne logik i din SigninService eller et tilsvarende sted)
-        //    var userInfo = await _signinService.ValidateGoogleToken(googleToken);
-        //    if (userInfo == null)
-        //    {
-        //        return Unauthorized("Ugyldig Google token.");
-        //    }
-
-        //    // Find eller opret brugeren i din database baseret på userInfo (implementer denne logik i din AccountService eller et tilsvarende sted)
-        //    var user = await _accountService.FindOrCreateUser(userInfo);
-
-        //    // Generer en token for din applikation baseret på brugeren
-        //    var token = _signinService.GenerateJwtToken(user);
-
-        //    // Returner token til klienten
-        //    return Ok(new { Token = token });
-        //}
-
+        }               
 
 
         //--------------------: GET :--------------------
