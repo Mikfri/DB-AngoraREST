@@ -16,9 +16,7 @@
       "launchUrl": "swagger",
       "applicationUrl": "http://localhost:5124",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "VaultUri": "https://dbangorarestvault.vault.azure.net/",
-        "AZURE_USERNAME": "mikk908w@edu.zealand.dk"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "https": {
@@ -28,9 +26,7 @@
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:7276;http://localhost:5124",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "VaultUri": "https://dbangorarestvault.vault.azure.net/",
-        "AZURE_USERNAME": "mikk908w@edu.zealand.dk"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "IIS Express": {
@@ -38,9 +34,7 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "VaultUri": "https://dbangorarestvault.vault.azure.net/",
-        "AZURE_USERNAME": "mikk908w@edu.zealand.dk"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

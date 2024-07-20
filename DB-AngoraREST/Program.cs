@@ -24,6 +24,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication;
 using Azure.Identity;
+using Microsoft.AspNetCore.CookiePolicy;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,7 +59,7 @@ builder.Services.AddDistributedMemoryCache(); // Adds a default in-memory implem
 
 /// Du kan tilf�je en betingelse for at skifte mellem forbindelsesstrengene for eksempel,
 /// baseret p� en milj�variabel eller en konfigurationsv�rdi
-var connectionStringName = "SecretConnection";
+var connectionStringName = "SecretConnection";  // "DefaultConnection"
 //if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
 //{
 //    connectionStringName = "SecretConnection";
@@ -71,15 +72,29 @@ builder.Services.AddDbContext<DB_AngoraContext>(options =>
 
 
 //------------------: IDENTITY
-builder.Services.AddIdentity<User, IdentityRole>()
+builder.Services.AddIdentity<User, IdentityRole>(
+    //options =>
+    //{
+    //    options.ClaimsIdentity.UserNameClaimType = "UserID";
+    //}
+    )
     .AddEntityFrameworkStores<DB_AngoraContext>()
-    .AddDefaultTokenProviders()
-    .AddSignInManager()
-    .AddRoles<IdentityRole>();
+    .AddDefaultTokenProviders();
+//.AddTokenProvider(authSettings.TokenProviderName, typeof(DataProtectorTokenProvider<User>));
+//.AddSignInManager()
+//.AddRoles<IdentityRole>();
 
 
 //------------------: JWT
 //--------: Authentication
+
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.MinimumSameSitePolicy = SameSiteMode.None;
+    options.HttpOnly = HttpOnlyPolicy.Always;
+    options.Secure = CookieSecurePolicy.Always; // Sikrer, at cookies kun sendes over HTTPS
+});
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -95,7 +110,7 @@ builder.Services.AddAuthentication(options =>
     googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
     googleOptions.CallbackPath = new PathString("/api/auth/signin-google");
     //googleOptions.CallbackPath = builder.Configuration["Authentication:Google:CallbackPath"];
-    //Console.WriteLine($"Google CallbackPath: {googleOptions.CallbackPath}");
+    Console.WriteLine($"Google CallbackPath: {googleOptions.CallbackPath}");
 
     //googleOptions.SaveTokens = true;    // Hvad g�r denne? - Gemmer tokens i cookie?
 })
@@ -148,7 +163,7 @@ builder.Services.AddSwaggerGen(options =>
             AuthorizationCode = new OpenApiOAuthFlow
             {
                 AuthorizationUrl = new Uri("https://accounts.google.com/o/oauth2/v2/auth"),
-                TokenUrl = new Uri("https://oauth2.googleapis.com/token"),
+                TokenUrl = new Uri("https://oauth2.googleapis.com/token"),  // Dette er Google's token-endpoint som bruges til at validere tokenet
                 Scopes = new Dictionary<string, string>
                 {
                     { "openid", "OpenID" },
@@ -219,10 +234,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "MyAllowSpecificOrigins",
     policy =>
     {
-        //policy.AllowAnyOrigin() // V�r forsigtig med at bruge AllowAnyOrigin() i produktion
-        policy.WithOrigins("https://localhost:7276")
+        policy.WithOrigins("https://localhost:7276") // Erstat med den korrekte oprindelse for Swagger UI
         .AllowAnyHeader()
-        .AllowAnyMethod();
+        .AllowAnyMethod()
+        .AllowCredentials(); // Tillad credentials såsom cookies, autorisation headers eller TLS klient certifikater
     });
 });
 

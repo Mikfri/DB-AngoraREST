@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using DB_AngoraLib.Services.TokenService;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace DB_AngoraREST.Controllers
 {
