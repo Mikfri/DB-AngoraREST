@@ -88,12 +88,12 @@ builder.Services.AddIdentity<User, IdentityRole>(
 //------------------: JWT
 //--------: Authentication
 
-builder.Services.Configure<CookiePolicyOptions>(options =>
-{
-    options.MinimumSameSitePolicy = SameSiteMode.None;
-    options.HttpOnly = HttpOnlyPolicy.Always;
-    options.Secure = CookieSecurePolicy.Always; // Sikrer, at cookies kun sendes over HTTPS
-});
+//builder.Services.Configure<CookiePolicyOptions>(options =>
+//{
+//    options.MinimumSameSitePolicy = SameSiteMode.None;
+//    options.HttpOnly = HttpOnlyPolicy.Always;
+//    options.Secure = CookieSecurePolicy.Always; // Sikrer, at cookies kun sendes over HTTPS
+//});
 
 builder.Services.AddAuthentication(options =>
 {
@@ -108,7 +108,8 @@ builder.Services.AddAuthentication(options =>
 {
     googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    googleOptions.CallbackPath = new PathString("/api/auth/signin-google");
+    //googleOptions.CallbackPath = new PathString("/api/auth/signin-google");
+    googleOptions.CallbackPath = "/signin-google";
     //googleOptions.CallbackPath = builder.Configuration["Authentication:Google:CallbackPath"];
     Console.WriteLine($"Google CallbackPath: {googleOptions.CallbackPath}");
 

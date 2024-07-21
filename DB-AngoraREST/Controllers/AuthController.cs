@@ -12,7 +12,8 @@ using DB_AngoraLib.Services.TokenService;
 
 namespace DB_AngoraREST.Controllers
 {
-    [Route("api/[controller]")]
+    //[Route("api/[controller]")]
+    [Route("")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -60,6 +61,16 @@ namespace DB_AngoraREST.Controllers
             var properties = new AuthenticationProperties { RedirectUri = Url.Action("GoogleLoginCallback") };
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
+
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //[HttpGet("Login_Google")]
+        //public IActionResult LoginWithGoogle()
+        //{
+        //    // Opret en challenge for Google authentication scheme, som vil omdirigere brugeren til Google's login side.
+        //    var properties = new AuthenticationProperties { RedirectUri = Url.Action("GoogleLoginCallback") };
+        //    return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+        //}
 
 
         [ProducesResponseType(StatusCodes.Status200OK)]
