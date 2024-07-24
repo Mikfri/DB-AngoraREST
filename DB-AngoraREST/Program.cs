@@ -25,9 +25,17 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication;
 using Azure.Identity;
 using Microsoft.AspNetCore.CookiePolicy;
+using Serilog;
+using Serilog.Events;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console());
 
 // Add services to the container.
 //-----------------: DB-AngoraLib Services
@@ -57,17 +65,9 @@ builder.Services.Configure<Settings_Email>(builder.Configuration.GetSection("Ema
 builder.Services.AddDistributedMemoryCache(); // Adds a default in-memory implementation of IDistributedCache
 
 
-/// Du kan tilf�je en betingelse for at skifte mellem forbindelsesstrengene for eksempel,
-/// baseret p� en milj�variabel eller en konfigurationsv�rdi
-var connectionStringName = "SecretConnection";  // "DefaultConnection"
-//if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
-//{
-//    connectionStringName = "SecretConnection";
-//}
-
 // -----------------: DB CONNECTION-STRING & MIGRATION SETUP
 builder.Services.AddDbContext<DB_AngoraContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString(connectionStringName),
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SecretConnection"),
     b => b.MigrationsAssembly("DB-AngoraREST")));
 
 
@@ -85,16 +85,6 @@ builder.Services.AddIdentity<User, IdentityRole>(
 //.AddRoles<IdentityRole>();
 
 
-//------------------: JWT
-//--------: Authentication
-
-//builder.Services.Configure<CookiePolicyOptions>(options =>
-//{
-//    options.MinimumSameSitePolicy = SameSiteMode.None;
-//    options.HttpOnly = HttpOnlyPolicy.Always;
-//    options.Secure = CookieSecurePolicy.Always; // Sikrer, at cookies kun sendes over HTTPS
-//});
-
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -108,8 +98,8 @@ builder.Services.AddAuthentication(options =>
 {
     googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    //googleOptions.CallbackPath = new PathString("/api/auth/signin-google");
-    googleOptions.CallbackPath = "/signin-google";
+    googleOptions.CallbackPath = new PathString("/api/auth/signin-google");
+    //googleOptions.CallbackPath = "/signin-google";
     //googleOptions.CallbackPath = builder.Configuration["Authentication:Google:CallbackPath"];
     Console.WriteLine($"Google CallbackPath: {googleOptions.CallbackPath}");
 
@@ -151,6 +141,7 @@ builder.Services.AddEndpointsApiExplorer(); // Swagger API-dokumentation (///<su
 //--------------------: SWAGGER
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 //--------: Google.OAuth2, Authentication UI
+//builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "DB-AngoraREST API", Version = "v1" });
@@ -174,7 +165,6 @@ builder.Services.AddSwaggerGen(options =>
             }
         }
     });
-
     // Tilføj JWT Bearer konfiguration
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -184,7 +174,6 @@ builder.Services.AddSwaggerGen(options =>
         Type = SecuritySchemeType.Http,
         Scheme = "Bearer"
     });
-
     // Tilføj sikkerhedskrav for OAuth2 og Bearer-token
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -230,17 +219,17 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 });
 
 //--------: Konfigurer CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: "MyAllowSpecificOrigins",
-    policy =>
-    {
-        policy.WithOrigins("https://localhost:7276") // Erstat med den korrekte oprindelse for Swagger UI
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials(); // Tillad credentials såsom cookies, autorisation headers eller TLS klient certifikater
-    });
-});
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy(name: "MyAllowSpecificOrigins",
+//    policy =>
+//    {
+//        policy.WithOrigins("https://localhost:7276") // Erstat med den korrekte oprindelse for Swagger UI
+//        .AllowAnyHeader()
+//        .AllowAnyMethod()
+//        .AllowCredentials(); // Tillad credentials såsom cookies, autorisation headers eller TLS klient certifikater
+//    });
+//});
 
 var app = builder.Build();
 
@@ -257,7 +246,7 @@ var app = builder.Build();
 //    DbInitializer.Initialize(context, userManager, roleManager);
 //}
 
-app.UseCors("MyAllowSpecificOrigins");
+//app.UseCors("MyAllowSpecificOrigins");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

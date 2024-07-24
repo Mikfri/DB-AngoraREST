@@ -12,8 +12,8 @@ using DB_AngoraLib.Services.TokenService;
 
 namespace DB_AngoraREST.Controllers
 {
-    //[Route("api/[controller]")]
-    [Route("")]
+    [Route("api/[controller]")]
+    //[Route("")]
     [ApiController]
     public class AuthController : ControllerBase
     {
