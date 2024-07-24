@@ -23,7 +23,6 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Serilog" Version="4.0.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
 		<PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="4.0.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
@@ -32,7 +31,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\DB-AngoraLib\DB-AngoraLib\DB-AngoraLib.csproj" />
+	  <Reference Include="DB-AngoraLib">
+	    <HintPath>..\..\DB-AngoraLib\DB-AngoraLib\bin\Debug\net8.0\DB-AngoraLib.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 </Project>
