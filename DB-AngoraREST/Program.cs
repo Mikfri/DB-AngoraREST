@@ -85,15 +85,6 @@ builder.Services.AddIdentity<User, IdentityRole>(
 //.AddRoles<IdentityRole>();
 
 
-//------------------: JWT
-//--------: Authentication
-
-//builder.Services.Configure<CookiePolicyOptions>(options =>
-//{
-//    options.MinimumSameSitePolicy = SameSiteMode.None;
-//    options.HttpOnly = HttpOnlyPolicy.Always;
-//    options.Secure = CookieSecurePolicy.Always; // Sikrer, at cookies kun sendes over HTTPS
-//});
 
 builder.Services.AddAuthentication(options =>
 {
@@ -104,17 +95,17 @@ builder.Services.AddAuthentication(options =>
 
 })
 // Dette er Googles OAuth2.0 config,
-.AddGoogle(googleOptions =>   // validerer automatisk "ya29." tokenet fra Google
-{
-    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    //googleOptions.CallbackPath = new PathString("/api/auth/signin-google");
-    googleOptions.CallbackPath = "/signin-google";
-    //googleOptions.CallbackPath = builder.Configuration["Authentication:Google:CallbackPath"];
-    Console.WriteLine($"Google CallbackPath: {googleOptions.CallbackPath}");
+//.AddGoogle(googleOptions =>   // validerer automatisk "ya29." tokenet fra Google
+//{
+//    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+//    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+//    //googleOptions.CallbackPath = new PathString("/api/auth/signin-google");
+//    googleOptions.CallbackPath = "/signin-google";
+//    //googleOptions.CallbackPath = builder.Configuration["Authentication:Google:CallbackPath"];
+//    Console.WriteLine($"Google CallbackPath: {googleOptions.CallbackPath}");
 
-    //googleOptions.SaveTokens = true;    // Hvad g�r denne? - Gemmer tokens i cookie?
-})
+//    //googleOptions.SaveTokens = true;    // Hvad g�r denne? - Gemmer tokens i cookie?
+//})
 .AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
@@ -164,24 +155,24 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "DB-AngoraREST API", Version = "v1" });
 
     // Tilføj Google OAuth2 konfiguration
-    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-    {
-        Type = SecuritySchemeType.OAuth2,
-        Flows = new OpenApiOAuthFlows
-        {
-            AuthorizationCode = new OpenApiOAuthFlow
-            {
-                AuthorizationUrl = new Uri("https://accounts.google.com/o/oauth2/v2/auth"),
-                TokenUrl = new Uri("https://oauth2.googleapis.com/token"),  // Dette er Google's token-endpoint som bruges til at validere tokenet
-                Scopes = new Dictionary<string, string>
-                {
-                    { "openid", "OpenID" },
-                    { "profile", "Profile" },
-                    { "email", "Email" }
-                }
-            }
-        }
-    });
+    //options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    //{
+    //    Type = SecuritySchemeType.OAuth2,
+    //    Flows = new OpenApiOAuthFlows
+    //    {
+    //        AuthorizationCode = new OpenApiOAuthFlow
+    //        {
+    //            AuthorizationUrl = new Uri("https://accounts.google.com/o/oauth2/v2/auth"),
+    //            TokenUrl = new Uri("https://oauth2.googleapis.com/token"),  // Dette er Google's token-endpoint som bruges til at validere tokenet
+    //            Scopes = new Dictionary<string, string>
+    //            {
+    //                { "openid", "OpenID" },
+    //                { "profile", "Profile" },
+    //                { "email", "Email" }
+    //            }
+    //        }
+    //    }
+    //});
     // Tilføj JWT Bearer konfiguration
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -194,20 +185,21 @@ builder.Services.AddSwaggerGen(options =>
     // Tilføj sikkerhedskrav for OAuth2 og Bearer-token
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "oauth2"
-                },
-                Scheme = "oauth2",
-                Name = "oauth2",
-                In = ParameterLocation.Header,
-            },
-            new List<string>() // Scopes her, hvis nødvendigt
-        },
+        // Google OAuth2
+        //{
+        //    new OpenApiSecurityScheme
+        //    {
+        //        Reference = new OpenApiReference
+        //        {
+        //            Type = ReferenceType.SecurityScheme,
+        //            Id = "oauth2"
+        //        },
+        //        Scheme = "oauth2",
+        //        Name = "oauth2",
+        //        In = ParameterLocation.Header,
+        //    },
+        //    new List<string>() // Scopes her, hvis nødvendigt
+        //},
         {
             new OpenApiSecurityScheme
             {
