@@ -85,8 +85,8 @@ namespace DB_AngoraREST.Controllers
         }
 
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [HttpGet("Pedigree/{earCombId}")]
         [Authorize(Roles = "Admin, Moderator, Breeder")] // Juster adgangskontrollen efter behov
@@ -110,32 +110,38 @@ namespace DB_AngoraREST.Controllers
             }
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpGet("TestParingPedigree")]
+        [Authorize(Roles = "Admin, Moderator, Breeder")]
+        public async Task<ActionResult<Rabbit_PedigreeDTO>> GetRabbitTestParingPedigree(
+        [FromQuery] string fatherEarCombId,
+        [FromQuery] string motherEarCombId)
+        {
+            try
+            {
+                var pedigree = await _rabbitService.Get_RabbitTestParingPedigree(fatherEarCombId, motherEarCombId);
 
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
-        //[HttpGet("Pedigree/{earCombId}")]
-        //[Authorize(Roles = "Admin, Moderator, Breeder")] // Juster adgangskontrollen efter behov
-        //public async Task<ActionResult<Rabbit_PedigreeDTO>> GetRabbitPedigree(string earCombId, [FromQuery] int maxGeneration = 3) // Standardværdi for maxGeneration kan justeres
-        //{
-        //    try
-        //    {
-        //        var rabbitPedigree = await _rabbitService.Get_RabbitPedigree(earCombId/*, maxGeneration*/);
+                if (pedigree == null)
+                {
+                    return NotFound(new { message = "Pedigree could not be generated for the provided ear comb IDs." });
+                }
 
-        //        if (rabbitPedigree == null)
-        //        {
-        //            return NotFound(new { message = $"Pedigree for rabbit with EarCombId '{earCombId}' not found." });
-        //        }
-
-        //        return Ok(rabbitPedigree);
-        //    }
-        //    catch (Exception ex) // Overvej at fange mere specifikke undtagelser, hvis det er muligt
-        //    {
-        //        // Log fejlen her, hvis nødvendigt
-        //        return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
-        //    }
-        //}
+                return Ok(pedigree);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Log the error here if needed
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+            }
+        }
 
 
 

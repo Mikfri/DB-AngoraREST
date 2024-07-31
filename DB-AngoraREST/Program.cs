@@ -146,6 +146,14 @@ builder.Services.AddAuthorization(options =>
         context.User.HasClaim("Rabbit:Delete", "Any")));
 });
 
+//--------: JSON ENUM CONVERTER
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; // S�rger for at refence-loop kan h�ndteres, som er tilf�ldet for Rabbit_PedigreeDTO
+
+});
+
 builder.Services.AddEndpointsApiExplorer(); // Swagger API-dokumentation (///<summary> over dine API end-points vises i UI)
 
 //--------------------: SWAGGER
@@ -174,7 +182,6 @@ builder.Services.AddSwaggerGen(options =>
             }
         }
     });
-
     // Tilføj JWT Bearer konfiguration
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -184,7 +191,6 @@ builder.Services.AddSwaggerGen(options =>
         Type = SecuritySchemeType.Http,
         Scheme = "Bearer"
     });
-
     // Tilføj sikkerhedskrav for OAuth2 og Bearer-token
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -219,15 +225,6 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-
-
-//--------: JSON ENUM CONVERTER
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; // S�rger for at refence-loop kan h�ndteres, som er tilf�ldet for Rabbit_PedigreeDTO
-
-});
 
 //--------: Konfigurer CORS
 builder.Services.AddCors(options =>
