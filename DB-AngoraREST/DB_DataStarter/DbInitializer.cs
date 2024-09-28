@@ -115,6 +115,21 @@ namespace DB_AngoraREST.DB_DataStarter
 
             context.SaveChanges();
 
+            // Tilføj mock BreederBrands uden Id
+            var mockBreederBrands = MockBreederBrand.GetMockBreederBrands();
+            foreach (var breederBrand in mockBreederBrands)
+            {
+                // Ensure the referenced user exists
+                var user = context.Users.FirstOrDefault(u => u.Id == breederBrand.UserId);
+                if (user != null)
+                {
+                    breederBrand.Id = 0; // Ensure Id is set to 0 so it will be auto-generated
+                    context.BreederBrands.Add(breederBrand);
+                }
+            }
+
+            context.SaveChanges();
+
         }
     }
 }

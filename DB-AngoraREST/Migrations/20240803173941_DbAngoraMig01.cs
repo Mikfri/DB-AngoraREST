@@ -33,6 +33,7 @@ namespace DB_AngoraREST.Migrations
                     BreederRegNo = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PublicProfile = table.Column<bool>(type: "bit", nullable: false),
                     RoadNameAndNo = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ZipCode = table.Column<int>(type: "int", nullable: false),
                     City = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -184,9 +185,9 @@ namespace DB_AngoraREST.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    DateSubmitted = table.Column<DateOnly>(type: "date", nullable: false),
                     UserApplicantId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DateSubmitted = table.Column<DateOnly>(type: "date", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     RequestedBreederRegNo = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DocumentationPath = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RejectionReason = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -197,6 +198,49 @@ namespace DB_AngoraREST.Migrations
                     table.ForeignKey(
                         name: "FK_BreederApplications_AspNetUsers_UserApplicantId",
                         column: x => x.UserApplicantId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BreederBrands",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    BreederBrandName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BreederBrandDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BreederBrandLogo = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BreederBrands", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BreederBrands_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Favorite",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ItemId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ItemType = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Favorite", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Favorite_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -217,7 +261,8 @@ namespace DB_AngoraREST.Migrations
                     DateOfBirth = table.Column<DateOnly>(type: "date", nullable: false),
                     DateOfDeath = table.Column<DateOnly>(type: "date", nullable: true),
                     Gender = table.Column<int>(type: "int", nullable: false),
-                    ForSale = table.Column<int>(type: "int", nullable: true),
+                    ForSale = table.Column<int>(type: "int", nullable: false),
+                    ForBreeding = table.Column<int>(type: "int", nullable: false),
                     FatherId_Placeholder = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Father_EarCombId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     MotherId_Placeholder = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -364,6 +409,32 @@ namespace DB_AngoraREST.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Trimmings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RabbitId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DateTrimmed = table.Column<DateOnly>(type: "date", nullable: false),
+                    FirstSortmentWeightGram = table.Column<int>(type: "int", nullable: false),
+                    SecondSortmentWeightGram = table.Column<int>(type: "int", nullable: false),
+                    DisposableWoolWeightGram = table.Column<int>(type: "int", nullable: false),
+                    TimeUsedMinutes = table.Column<int>(type: "int", nullable: true),
+                    HairLengthCm = table.Column<float>(type: "real", nullable: true),
+                    WoolDensity = table.Column<float>(type: "real", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Trimmings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Trimmings_Rabbits_RabbitId",
+                        column: x => x.RabbitId,
+                        principalTable: "Rabbits",
+                        principalColumn: "EarCombId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -416,6 +487,17 @@ namespace DB_AngoraREST.Migrations
                 column: "UserApplicantId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_BreederBrands_UserId",
+                table: "BreederBrands",
+                column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Favorite_UserId",
+                table: "Favorite",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Photos_RabbitEarCombId",
                 table: "Photos",
                 column: "RabbitEarCombId");
@@ -464,6 +546,11 @@ namespace DB_AngoraREST.Migrations
                 name: "IX_TransferRequests_RecipentId",
                 table: "TransferRequests",
                 column: "RecipentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Trimmings_RabbitId",
+                table: "Trimmings",
+                column: "RabbitId");
         }
 
         /// <inheritdoc />
@@ -488,6 +575,12 @@ namespace DB_AngoraREST.Migrations
                 name: "BreederApplications");
 
             migrationBuilder.DropTable(
+                name: "BreederBrands");
+
+            migrationBuilder.DropTable(
+                name: "Favorite");
+
+            migrationBuilder.DropTable(
                 name: "Notifications");
 
             migrationBuilder.DropTable(
@@ -501,6 +594,9 @@ namespace DB_AngoraREST.Migrations
 
             migrationBuilder.DropTable(
                 name: "TransferRequests");
+
+            migrationBuilder.DropTable(
+                name: "Trimmings");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

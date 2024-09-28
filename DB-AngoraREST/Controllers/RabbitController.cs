@@ -27,7 +27,7 @@ namespace DB_AngoraREST.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpPost("Create")]
+        [HttpPost("Create")]    // FromBody er bedst til SPA applikationer
         [Authorize(Roles = "Admin, Breeder, Moderator")]
         public async Task<ActionResult<Rabbit_ProfileDTO>> AddRabbit([FromBody] Rabbit_CreateDTO newRabbitDto)
         {
@@ -48,7 +48,30 @@ namespace DB_AngoraREST.Controllers
             }
         }
 
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpPost("Create_Form")]
+        [Authorize(Roles = "Admin, Breeder, Moderator")]
+        public async Task<ActionResult<Rabbit_ProfileDTO>> AddRabbit_Form([FromForm] Rabbit_CreateDTO newRabbitDto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            try
+            {
+                // Pass the userId and newRabbitDto to your service method
+                var createdRabbit = await _rabbitService.AddRabbit_ToMyCollection(userId, newRabbitDto);
+
+                // Use CreatedAtAction with GetRabbit_ProfileByEarTags
+                return CreatedAtAction(nameof(GetRabbit_ProfileByEarTags), new { earCombId = createdRabbit.EarCombId }, createdRabbit);
+            }
+            catch (InvalidOperationException ex)    // ved at have catch på vil RabbitService fejl beskeden kunne sendes tilbage til klienten
+            {
+                // Log the error here if needed
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
         //-------------------------------: GET
 

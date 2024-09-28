@@ -2,6 +2,7 @@
 using DB_AngoraLib.DTOs;
 using DB_AngoraLib.Models;
 using DB_AngoraLib.Services.AccountService;
+using DB_AngoraLib.Services.BreederBrandService;
 using DB_AngoraLib.Services.SigninService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -22,11 +23,13 @@ namespace DB_AngoraREST.Controllers
 
         private readonly ISigninService _signinService;
         private readonly IAccountService _accountService;
+        private readonly IBreederBrandService _bbService;
 
-        public AccountController(ISigninService signinService, IAccountService accountService)
+        public AccountController(ISigninService signinService, IAccountService accountService, IBreederBrandService bbService)
         {
             _signinService = signinService;
             _accountService = accountService;
+            _bbService = bbService;
         }
 
 
@@ -54,10 +57,35 @@ namespace DB_AngoraREST.Controllers
 
             // Hvis vi er nået hertil, er der noget galt, vis formular igen
             return BadRequest(ModelState);
-        }               
+        }
 
 
         //--------------------: GET :--------------------
+        //-------: User profile
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpGet("UserProfile/{userProfileId}")]
+        [Authorize(Policy = "ReadUser")]
+        public async Task<IActionResult> GetUserProfile(string userProfileId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userClaims = User.Claims.ToList();
+
+            var userProfile = await _accountService.Get_User_Profile(userId, userProfileId, userClaims);
+
+            if (userProfile != null)
+            {
+                return Ok(userProfile);
+            }
+
+            return NotFound("User profile not found or you do not have permission to view it.");
+        }
+
+        //-------: BreederBrand profile
+
+
         //-------: User collections
 
         /// <summary>

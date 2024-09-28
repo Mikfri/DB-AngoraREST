@@ -21,7 +21,7 @@
     },
     "resourceName": {
       "type": "string",
-      "defaultValue": "DB-Angora-REST",
+      "defaultValue": "DB-Angora-noREST",
       "metadata": {
         "description": "Name of the main resource to be created by this template."
       }

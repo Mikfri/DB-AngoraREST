@@ -25,6 +25,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication;
 using Azure.Identity;
 using Microsoft.AspNetCore.CookiePolicy;
+using DB_AngoraLib.Services.BreederBrandService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +40,10 @@ builder.Services.AddScoped<IGRepository<ApplicationBreeder>, GRepository<Applica
 builder.Services.AddScoped<IApplicationService, ApplicationServices>();
 builder.Services.AddScoped<IGRepository<TransferRequst>, GRepository<TransferRequst>>();
 builder.Services.AddScoped<ITransferService, TransferServices>();
+
+builder.Services.AddScoped<IGRepository<BreederBrand>, GRepository<BreederBrand>>();
+builder.Services.AddScoped<IBreederBrandService, BreederBrandServices>();
+
 builder.Services.AddScoped<IGRepository<RefreshToken>, GRepository<RefreshToken>>();
 builder.Services.AddScoped<ITokenService, TokenServices>();
 builder.Services.AddScoped<IGRepository<Notification>, GRepository<Notification>>();
@@ -59,7 +64,7 @@ builder.Services.AddDistributedMemoryCache(); // Adds a default in-memory implem
 
 /// Du kan tilf�je en betingelse for at skifte mellem forbindelsesstrengene for eksempel,
 /// baseret p� en milj�variabel eller en konfigurationsv�rdi
-var connectionStringName = "SecretConnection";  // "DefaultConnection"
+//var connectionStringName = "DefaultConnection";  // "DefaultConnection" "SecretConnection"
 //if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
 //{
 //    connectionStringName = "SecretConnection";
@@ -67,7 +72,7 @@ var connectionStringName = "SecretConnection";  // "DefaultConnection"
 
 // -----------------: DB CONNECTION-STRING & MIGRATION SETUP
 builder.Services.AddDbContext<DB_AngoraContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString(connectionStringName),
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
     b => b.MigrationsAssembly("DB-AngoraREST")));
 
 
@@ -125,6 +130,18 @@ builder.Services.AddAuthentication(options =>
 //--------: Authorization
 builder.Services.AddAuthorization(options =>
 {
+
+    //-----------------: USER POLICIES
+    options.AddPolicy("ReadUser", policy =>
+    policy.RequireAssertion(context =>
+        context.User.HasClaim("User:Read", "Own") ||
+        context.User.HasClaim("User:Read", "Any")));
+
+    options.AddPolicy("UpdateUser", policy =>
+    policy.RequireAssertion(context =>
+        context.User.HasClaim("User:Update", "Own") ||
+        context.User.HasClaim("User:Update", "Any")));
+
     //-----------------: RABBIT POLICIES
     options.AddPolicy("UpdateRabbit", policy =>
     policy.RequireAssertion(context =>
@@ -236,15 +253,15 @@ var app = builder.Build();
 //-----------------: DB-INITIALIZER setup // UDKOMENTER n�r der skal laves DGML
 // Get the service scope factory
 
-//var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
-//using (var scope = serviceScopeFactory.CreateScope())
-//{
-//    var context = scope.ServiceProvider.GetRequiredService<DB_AngoraContext>();
-//    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+using (var scope = serviceScopeFactory.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<DB_AngoraContext>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-//    DbInitializer.Initialize(context, userManager, roleManager);
-//}
+    DbInitializer.Initialize(context, userManager, roleManager);
+}
 
 app.UseCors("MyAllowSpecificOrigins");
 // Configure the HTTP request pipeline.
