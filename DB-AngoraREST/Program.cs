@@ -26,6 +26,7 @@ using Microsoft.AspNetCore.Authentication;
 using Azure.Identity;
 using Microsoft.AspNetCore.CookiePolicy;
 using DB_AngoraLib.Services.BreederBrandService;
+using DB_AngoraLib.Services.BreederService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,7 @@ builder.Services.AddScoped<IGRepository<Rabbit>, GRepository<Rabbit>>();
 builder.Services.AddScoped<IRabbitService, RabbitServices>();
 builder.Services.AddScoped<IGRepository<User>, GRepository<User>>();
 builder.Services.AddScoped<IAccountService, AccountServices>();
+builder.Services.AddScoped<IBreederService, BreederServices>();
 builder.Services.AddScoped<IGRepository<ApplicationBreeder>, GRepository<ApplicationBreeder>>();
 builder.Services.AddScoped<IApplicationService, ApplicationServices>();
 builder.Services.AddScoped<IGRepository<TransferRequst>, GRepository<TransferRequst>>();

@@ -176,7 +176,7 @@ namespace DB_AngoraREST.Controllers
         [Authorize(Roles = "Admin, Moderator")]
         public async Task<ActionResult<IEnumerable<Rabbit>>> GetRabbitsByBreeder(string breederRegNo)
         {
-            var rabbits = await _rabbitService.Get_AllRabbits_ByBreederReg(breederRegNo);
+            var rabbits = await _rabbitService.Get_AllRabbits_ByBreederRegNo(breederRegNo);
             if (rabbits == null || !rabbits.Any())
             {
                 return NotFound();
